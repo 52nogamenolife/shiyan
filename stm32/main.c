@@ -17,8 +17,8 @@
 
 #define dis_catch1 1850
 #define dis_catch2 1850
-u16 motor1=0,motor2=0,motor3=0,motor4=0;
-//u8 catch_1=0,catch_2=0;	
+u16 motor1=0,motor2=0,motor3=0,motor4=0;//控制步进电机
+u16 mg1,mg2,mg3,mg4;//控制最上方的舵机
  int main(void)
  {		
  
@@ -27,22 +27,17 @@ u16 motor1=0,motor2=0,motor3=0,motor4=0;
 	uart_init(115200);	 //串口初始化为115200
  	LED_Init();			     //LED端口初始化
  	TIM3_PWM_Init(1999,719);	 //720分频。PWM频率=72000000/720/2000=50hz
-	TIM3_PWM_Init(71,0);	 //不分频。PWM频率=72000000/900=80Khz
+	TIM4_Int_Init(71,1);	 //不分频。PWM频率=72000000/72/2=500Khz
    	while(1)
 	{
- 		delay_ms(30);	 		
+ 		delay_ms(30);//这个延时决定了电机的参数获取速度，即电机的PWM的周期
 		
-		get_motor();
+		get_motor();//获取八个电机的运行参数
 		
 		TIM_SetCompare1(TIM3,mg1);//1号舵机
 		TIM_SetCompare2(TIM3,mg2);//5号舵机
 		TIM_SetCompare3(TIM3,mg3);//2号舵机
 		TIM_SetCompare4(TIM3,mg4);//6号舵机
-		
-		TIM_SetCompare1(TIM4,motor1);//1号步进电机
-		TIM_SetCompare2(TIM4,motor2);//2号步进电机
-		TIM_SetCompare3(TIM4,motor3);//3号步进电机
-		TIM_SetCompare4(TIM4,motor4);//4号步进电机
 		
 	}	 
  }
