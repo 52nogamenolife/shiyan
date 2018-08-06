@@ -28,6 +28,8 @@ extern u16 motor1,motor2,motor3,motor4;//控制步进电机
 extern u16 mg1,mg2,mg3,mg4;//控制最上方的舵机
 u16 num;
 u8 flag;
+u8 L_flag,R_flag,P_flag,F_flag,G_flag;//左手 右手 放下 脱机 读取rfid
+extern u16 len;
 void TIM4_Int_Init(u16 arr,u16 psc)
 {
   TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
@@ -229,14 +231,95 @@ void TIM3_PWM_Init(u16 arr,u16 psc)
 
 void get_motor(void)
 {
+	if(USART_RX_STA&0x8000)//是否有接收到东西
+		{
+		
+			len = USART_RX_STA&0x3fff;//得到此次接收到的数据长度	
+			switch (USART_RX_BUF[0]) {
+				case 'L':
+					if(USART_RX_BUF[1]=='q'){
+						L_flag=1;
+						while(USART_RX_STA&0x8000&&USART_RX_BUF[0]=='L'&&USART_RX_BUF[1]=='q'){		
+						USART_SendData(USART1, 'L');
+						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+						USART_SendData(USART1, 'r');
+						USART_RX_STA=0;
+						}
+					}
+					break;
+				case 'R': 
+					if(USART_RX_BUF[1]=='q'){
+						R_flag=1;
+						while(USART_RX_STA&0x8000&&USART_RX_BUF[0]=='R'&&USART_RX_BUF[1]=='q'){		
+						USART_SendData(USART1, 'R');
+						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+						USART_SendData(USART1, 'r');
+						USART_RX_STA=0;
+						}
+					}
+					break;
+				case 'P': 
+					if(USART_RX_BUF[1]=='q'){
+						P_flag=1;
+						while(USART_RX_STA&0x8000&&USART_RX_BUF[0]=='P'&&USART_RX_BUF[1]=='q'){		
+						USART_SendData(USART1, 'P');
+						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+						USART_SendData(USART1, 'r');
+						USART_RX_STA=0;
+						}
+					}
+					break;
+				case 'F':
+					if(USART_RX_BUF[1]=='q'){
+						F_flag=1;
+						while(USART_RX_STA&0x8000&&USART_RX_BUF[0]=='F'&&USART_RX_BUF[1]=='q'){		
+						USART_SendData(USART1, 'F');
+						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+						USART_SendData(USART1, 'r');
+						USART_RX_STA=0;
+						}
+					}
+					break;
+				case 'G':
+					if(USART_RX_BUF[1]=='q'){
+						G_flag=1;
+						while(USART_RX_STA&0x8000&&USART_RX_BUF[0]=='G'&&USART_RX_BUF[1]=='q'){		
+						USART_SendData(USART1, 'G');
+						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+						USART_SendData(USART1, 'r');
+						USART_RX_STA=0;
+						}
+					}
+					break;
+				default : break;
+				}
+			
+		}
+		
 	if(1)
-		motor1=num;
-	if(1)
-		motor2=num;
-	if(1)
-		motor3=num;
-	if(1)
-		motor4=num;
+				motor1=num;
+			if(1)
+				motor2=num;
+			if(1)
+				motor3=num;
+			if(1)
+				motor4=num;
+			/*
+			if(F_flag){//脱机上升
+			motor1=num1;
+			motor2=num2;
+			motor3=num3;
+			motor4=num4;
+		}
+			else {//停止上升
+			motor1=0;
+			motor2=0;
+			motor3=0;
+			motor4=0;
+			
+			}
+			*/
+	
 	if(1)
 		mg1=num;
 	if(1)
@@ -245,5 +328,5 @@ void get_motor(void)
 		mg3=num;
 	if(1)
 		mg4=num;
-	
+
 }
