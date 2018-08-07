@@ -29,7 +29,7 @@ extern u16 mg1,mg2,mg3,mg4;//控制最上方的舵机
 u16 num;
 u8 flag;
 u8 L_flag,R_flag,P_flag,F_flag,G_flag;//左手 右手 放下 脱机 读取rfid
-extern u16 len;
+extern u16 usart1_len,usart2_len;//串口数据长度
 void TIM4_Int_Init(u16 arr,u16 psc)
 {
   TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
@@ -118,9 +118,6 @@ void TIM4_IRQHandler(void)   //TIM3中断
 
 
 }
-
-
-
 
 //TIM3 PWM部分初始化 
 //PWM输出初始化
@@ -231,63 +228,63 @@ void TIM3_PWM_Init(u16 arr,u16 psc)
 
 void get_motor(void)
 {
-	if(USART_RX_STA&0x8000)//是否有接收到东西
+	if(USART1_RX_STA&0x8000)//是否有接收到东西
 		{
 		
-			len = USART_RX_STA&0x3fff;//得到此次接收到的数据长度	
-			switch (USART_RX_BUF[0]) {
+			usart1_len = USART1_RX_STA&0x3fff;//得到此次接收到的数据长度	
+			switch (USART1_RX_BUF[0]) {
 				case 'L':
-					if(USART_RX_BUF[1]=='q'){
+					if(USART1_RX_BUF[1]=='q'){
 						L_flag=1;
-						while(USART_RX_STA&0x8000&&USART_RX_BUF[0]=='L'&&USART_RX_BUF[1]=='q'){		
+						while(USART1_RX_STA&0x8000&&USART1_RX_BUF[0]=='L'&&USART1_RX_BUF[1]=='q'){		
 						USART_SendData(USART1, 'L');
 						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 						USART_SendData(USART1, 'r');
-						USART_RX_STA=0;
+						USART1_RX_STA=0;
 						}
 					}
 					break;
 				case 'R': 
-					if(USART_RX_BUF[1]=='q'){
+					if(USART1_RX_BUF[1]=='q'){
 						R_flag=1;
-						while(USART_RX_STA&0x8000&&USART_RX_BUF[0]=='R'&&USART_RX_BUF[1]=='q'){		
+						while(USART1_RX_STA&0x8000&&USART1_RX_BUF[0]=='R'&&USART1_RX_BUF[1]=='q'){		
 						USART_SendData(USART1, 'R');
 						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 						USART_SendData(USART1, 'r');
-						USART_RX_STA=0;
+						USART1_RX_STA=0;
 						}
 					}
 					break;
 				case 'P': 
-					if(USART_RX_BUF[1]=='q'){
+					if(USART1_RX_BUF[1]=='q'){
 						P_flag=1;
-						while(USART_RX_STA&0x8000&&USART_RX_BUF[0]=='P'&&USART_RX_BUF[1]=='q'){		
+						while(USART1_RX_STA&0x8000&&USART1_RX_BUF[0]=='P'&&USART1_RX_BUF[1]=='q'){		
 						USART_SendData(USART1, 'P');
 						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 						USART_SendData(USART1, 'r');
-						USART_RX_STA=0;
+						USART1_RX_STA=0;
 						}
 					}
 					break;
 				case 'F':
-					if(USART_RX_BUF[1]=='q'){
+					if(USART1_RX_BUF[1]=='q'){
 						F_flag=1;
-						while(USART_RX_STA&0x8000&&USART_RX_BUF[0]=='F'&&USART_RX_BUF[1]=='q'){		
+						while(USART1_RX_STA&0x8000&&USART1_RX_BUF[0]=='F'&&USART1_RX_BUF[1]=='q'){		
 						USART_SendData(USART1, 'F');
 						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 						USART_SendData(USART1, 'r');
-						USART_RX_STA=0;
+						USART1_RX_STA=0;
 						}
 					}
 					break;
 				case 'G':
-					if(USART_RX_BUF[1]=='q'){
+					if(USART1_RX_BUF[1]=='q'){
 						G_flag=1;
-						while(USART_RX_STA&0x8000&&USART_RX_BUF[0]=='G'&&USART_RX_BUF[1]=='q'){		
+						while(USART1_RX_STA&0x8000&&USART1_RX_BUF[0]=='G'&&USART1_RX_BUF[1]=='q'){		
 						USART_SendData(USART1, 'G');
 						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 						USART_SendData(USART1, 'r');
-						USART_RX_STA=0;
+						USART1_RX_STA=0;
 						}
 					}
 					break;
