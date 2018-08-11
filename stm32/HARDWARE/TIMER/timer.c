@@ -54,8 +54,8 @@ void TIM4_Int_Init(u16 arr,u16 psc)
 	TIM_Cmd(TIM4, ENABLE);  //使能TIMx外设
 							 
 }
-//定时器3中断服务程序
-void TIM4_IRQHandler(void)   //TIM3中断
+//定时器4中断服务程序
+void TIM4_IRQHandler(void)   //TIM4中断
 {
 	if (TIM_GetITStatus(TIM4, TIM_IT_Update) != RESET) //检查指定的TIM中断发生与否:TIM 中断源 
 		{
@@ -302,7 +302,7 @@ void get_motor(void)
 			if(1)
 				motor4=num;
 			/*
-			if(F_flag){//脱机上升
+			if(F_flag==2){//脱机上升
 			motor1=num1;
 			motor2=num2;
 			motor3=num3;
