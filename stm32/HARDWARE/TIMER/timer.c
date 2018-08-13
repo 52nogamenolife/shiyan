@@ -288,19 +288,44 @@ void get_motor(void)
 						}
 					}
 					break;
-				default : break;
+				case 't'://步进电机
+					switch(USART1_RX_BUF[1]){
+						case 1:
+							motor1=USART1_RX_BUF[2];
+							break;
+						case 2:
+							motor2=USART1_RX_BUF[2];
+							break;
+						case 3:
+							motor3=USART1_RX_BUF[2];
+							break;
+						case 4:
+							motor4=USART1_RX_BUF[2];
+							break;
+						default:
+							break;
+					}
+					case 'g':
+						switch(USART1_RX_BUF[1]){
+						case 1:
+							mg1=USART1_RX_BUF[2];
+							break;
+						case 2:
+							mg2=USART1_RX_BUF[2];
+							break;
+						case 3:
+							mg3=USART1_RX_BUF[2];
+							break;
+						case 4:
+							mg4=USART1_RX_BUF[2];
+							break;
+						default:
+							break;
+					}
 				}
 			
 		}
 		
-	if(1)
-				motor1=num;
-			if(1)
-				motor2=num;
-			if(1)
-				motor3=num;
-			if(1)
-				motor4=num;
 			/*
 			if(F_flag==2){//脱机上升
 			motor1=num1;
@@ -316,14 +341,4 @@ void get_motor(void)
 			
 			}
 			*/
-	
-	if(1)
-		mg1=num;
-	if(1)
-		mg2=num;
-	if(1)
-		mg3=num;
-	if(1)
-		mg4=num;
-
 }
