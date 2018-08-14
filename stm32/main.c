@@ -6,76 +6,109 @@
 #include "timer.h"
 #include "rfid.h"
 #include "adapter.h"
+#include "ultrasonic.h"
+#include "switch.h"
 /************************************************
- ALIENTEK¾«Ó¢STM32¿ª·¢°åÊµÑé9
- PWMÊä³öÊµÑé  
- ¼¼ÊõÖ§³Ö£ºwww.openedv.com
- ÌÔ±¦µêÆÌ£ºhttp://eboard.taobao.com 
- ¹Ø×¢Î¢ĞÅ¹«ÖÚÆ½Ì¨Î¢ĞÅºÅ£º"ÕıµãÔ­×Ó"£¬Ãâ·Ñ»ñÈ¡STM32×ÊÁÏ¡£
- ¹ãÖİÊĞĞÇÒíµç×Ó¿Æ¼¼ÓĞÏŞ¹«Ë¾  
- ×÷Õß£ºÕıµãÔ­×Ó @ALIENTEK
+ ALIENTEKç²¾è‹±STM32å¼€å‘æ¿å®éªŒ9
+ PWMè¾“å‡ºå®éªŒ  
+ æŠ€æœ¯æ”¯æŒï¼šwww.openedv.com
+ æ·˜å®åº—é“ºï¼šhttp://eboard.taobao.com 
+ å…³æ³¨å¾®ä¿¡å…¬ä¼—å¹³å°å¾®ä¿¡å·ï¼š"æ­£ç‚¹åŸå­"ï¼Œå…è´¹è·å–STM32èµ„æ–™ã€‚
+ å¹¿å·å¸‚æ˜Ÿç¿¼ç”µå­ç§‘æŠ€æœ‰é™å…¬å¸  
+ ä½œè€…ï¼šæ­£ç‚¹åŸå­ @ALIENTEK
 ************************************************/
 
 #define dis_catch1 1850
 #define dis_catch2 1850
-u16 motor1=0,motor2=0,motor3=0,motor4=0;//¿ØÖÆ²½½øµç»ú
-u8 adapter1[2],adapter2[2],adapter3[2],adapter4[2];//²½½øµç»úµÄ×ª¶¯Ê±¼ä
-u16 mg1,mg2,mg3,mg4;//¿ØÖÆ×îÉÏ·½µÄ¶æ»ú
-u16 usart1_len,usart2_len;//´®¿ÚÊı¾İ³¤¶È
-extern u8 L_flag,R_flag,P_flag,F_flag,G_flag;//×óÊÖ ÓÒÊÖ ·ÅÏÂ ÍÑ»ú ¶ÁÈ¡rfid
-extern u8 b_flag,s_flag;//µç¸Ü»ØËõ,Í£Ö¹
+u16 motor1=0,motor2=0,motor3=0,motor4=0;//æ§åˆ¶æ­¥è¿›ç”µæœº
+
+u8 adapter1[2],adapter2[2],adapter3[2],adapter4[2];//æ­¥è¿›ç”µæœºçš„è½¬åŠ¨æ—¶é—´
+u16 mg1,mg2,mg3,mg4;//æ§åˆ¶æœ€ä¸Šæ–¹çš„èˆµæœº
+u16 usart1_len,usart2_len;//ä¸²å£æ•°æ®é•¿åº¦
+
+u8 looptime,delaytime;
+extern u8 b_flag,s_flag;//ç”µæ å›ç¼©,åœæ­¢
+extern u8 L_flag,R_flag,P_flag,F_flag,G_flag,B_flag;//å·¦æ‰‹ å³æ‰‹ æ”¾ä¸‹ è„±æœº è¯»å–rfid å·¦å³è‡‚èˆµæœºå›è½¬
+extern u16 ultrasonic1,ultrasonic2;//è¶…å£°æ³¢è¿”å›çš„å®šæ—¶å™¨è®¡æ•°å€¼
+
  int main(void)
  {		
 	u16 t=0;
 	
-	delay_init();	    	 //ÑÓÊ±º¯Êı³õÊ¼»¯	  
-	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2); 	 //ÉèÖÃNVICÖĞ¶Ï·Ö×é2:2Î»ÇÀÕ¼ÓÅÏÈ¼¶£¬2Î»ÏìÓ¦ÓÅÏÈ¼¶
-	
-	 
-	 
-	uart1_init(115200);	 //´®¿Ú³õÊ¼»¯Îª115200 ¸ºÔğÀ¶ÑÀÍ¨ĞÅ ÉÏÏÂ»ú
- 	uart2_init(115200);	 //´®¿Ú³õÊ¼»¯Îª115200 ¸ºÔğ¶ÁÈ¡rfid
-	LED_Init();			     //LED¶Ë¿Ú³õÊ¼»¯
- 	TIM3_PWM_Init(1999,719);	 //720·ÖÆµ¡£PWMÆµÂÊ=72000000/720/2000=50hz
-	TIM4_Int_Init(71,1);	 //²»·ÖÆµ¡£PWMÆµÂÊ=72000000/72/2=500Khz
+	delay_init();	    	 //å»¶æ—¶å‡½æ•°åˆå§‹åŒ–	  
+	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2); 	 //è®¾ç½®NVICä¸­æ–­åˆ†ç»„2:2ä½æŠ¢å ä¼˜å…ˆçº§ï¼Œ2ä½å“åº”ä¼˜å…ˆçº§
+	uart1_init(115200);	 //ä¸²å£åˆå§‹åŒ–ä¸º115200 è´Ÿè´£è“ç‰™é€šä¿¡ ä¸Šä¸‹æœº
+ 	uart2_init(115200);	 //ä¸²å£åˆå§‹åŒ–ä¸º115200 è´Ÿè´£è¯»å–rfid
+	LED_Init();			     //LEDç«¯å£åˆå§‹åŒ–
+ 	TIM3_PWM_Init(1999,719);	 //720åˆ†é¢‘ã€‚PWMé¢‘ç‡=72000000/720/2000=50hz
+	TIM4_Int_Init(71,1);	 //åˆ†é¢‘2ã€‚PWMé¢‘ç‡=72000000/72/2=500Khz
+	 //è¶…å£°æ³¢é…ç½®
+	TIM1_Configuration(19999,71);
+	ultrasonic_GPIO_init();
+	ultrasonic_IRQ_init();
    	while(1)
 	{
- 		delay_ms(30);//Õâ¸öÑÓÊ±¾ö¶¨ÁËµç»úµÄ²ÎÊı»ñÈ¡ËÙ¶È£¬¼´µç»úµÄPWMµÄÖÜÆÚ
+ 		delay_ms(30);//è¿™ä¸ªå»¶æ—¶å†³å®šäº†ç”µæœºçš„å‚æ•°è·å–é€Ÿåº¦ï¼Œå³ç”µæœºçš„PWMçš„å‘¨æœŸ
 		
-		get_motor();//»ñÈ¡°Ë¸öµç»úµÄÔËĞĞ²ÎÊı
-		
+		get_motor();//è·å–ä»¥åŠè®¾ç½®å…«ä¸ªç”µæœºçš„è¿è¡Œå‚æ•°
 		
 		if(L_flag){
-			TIM_SetCompare1(TIM3,mg1);//×óÊÖ¶æ»ú
-			L_flag=0;
+			int i;
+			TIM_SetCompare1(TIM3,mg1);//å·¦æ‰‹èˆµæœº
+			
+			for(i=0;i<looptime;i++){
+				TIM_OC1PreloadConfig(TIM3, TIM_OCPreload_Disable);
+				delay_ms(delaytime);
+				TIM_OC1PreloadConfig(TIM3, TIM_OCPreload_Enable);
+				delay_ms(20);
+			}
+      L_flag=0;
 		}
+		
 		if(R_flag){
-			TIM_SetCompare2(TIM3,mg2);//ÓÒÊÖ¶æ»ú
-			R_flag=0;
+			int i;
+			TIM_SetCompare2(TIM3,mg2);//å³æ‰‹èˆµæœº
+			
+			for(i=0;i<100;i++){
+				TIM_OC2PreloadConfig(TIM3, TIM_OCPreload_Disable);
+				delay_ms(30);
+				TIM_OC2PreloadConfig(TIM3, TIM_OCPreload_Enable);
+				delay_ms(20);
+			}
 		}
-		if(P_flag){//·ÅÏÂ
-			TIM_SetCompare1(TIM3,0);
-			TIM_SetCompare2(TIM3,0);
-			P_flag=0;	
+		if(P_flag){//æ”¾ä¸‹
+			int i;
+			TIM_SetCompare1(TIM3,mg1);
+			TIM_SetCompare2(TIM3,mg2);
+			
+			for(i=0;i<100;i++){
+				TIM_OC1PreloadConfig(TIM3, TIM_OCPreload_Disable);
+				TIM_OC2PreloadConfig(TIM3, TIM_OCPreload_Disable);
+				delay_ms(30);
+				TIM_OC1PreloadConfig(TIM3, TIM_OCPreload_Enable);
+				TIM_OC2PreloadConfig(TIM3, TIM_OCPreload_Enable);
+				delay_ms(20);
+			}
+		}	
+		
+		if(GPIO_ReadOutputDataBit(GPIOE,GPIO_Pin_7)){//åˆ°è¾¾é¡¶éƒ¨ æ ¹æ®å¼€å…³!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+			TIM_SetCompare3(TIM3,mg3);//å·¦è‡‚èˆµæœº
+			TIM_SetCompare4(TIM3,mg4);//å³è‡‚èˆµæœº		
 		}
-		
-		
-		
-		if(1)//µ½´ï¶¥²¿
-			TIM_SetCompare3(TIM3,mg3);//×ó±Û¶æ»ú
-			TIM_SetCompare4(TIM3,mg4);//ÓÒ±Û¶æ»ú
-		
-		
-		
 		if(G_flag){
-		t=Read_flag();//¶ÁÈ¡Æì×ÓĞÅÏ¢
+		t=Read_flag();//è¯»å–æ——å­ä¿¡æ¯
 		G_flag=0;
 		USART_SendData(USART1,t);
 		}
+		if(B_flag){//åˆ°è¾¾æ‹è§’ç‚¹ ä¸‹é¢å‘é€ä¿¡å·è½¬ä¼šå·¦å³è‡‚èˆµæœº
+			TIM_SetCompare3(TIM3,mg3);
+			TIM_SetCompare4(TIM3,mg4);
+		}
 		
-		if(F_flag){
-			//×¥×¡
+		if(F_flag==1){
+			//æŠ“ä½  ç”µç¼¸å‰è¿›åé€€
 			backward(1);
+
 			for(int i=0;i<adapter1[0];i++)
 			delay_ms(adapter1[0]);
 			stop();
@@ -91,10 +124,10 @@ extern u8 b_flag,s_flag;//µç¸Ü»ØËõ,Í£Ö¹
 			for(int i=0;i<adapter4[0];i++)
 			delay_ms(adapter4[0]);
 			stop();
-			F_flag=0;
+			F_flag=2;
 		}
 		if(b_flag){
-			//×¥×¡
+			//æŠ“ä½
 			forward(1);
 			for(int i=0;i<adapter1[0];i++)
 			delay_ms(adapter1[0]);
@@ -117,7 +150,9 @@ extern u8 b_flag,s_flag;//µç¸Ü»ØËõ,Í£Ö¹
 			stop();
 			s_flag=0;
 				}
+		if(ultrasonic1>=7100||ultrasonic2>=7100){
+			F_flag=3;
+		}
 	}
-	
 	
  }
