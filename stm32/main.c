@@ -106,42 +106,44 @@ extern u16 ultrasonic1,ultrasonic2;//超声波返回的定时器计数值
 		}
 		
 		if(F_flag==1){
+			int i;
 			//抓住  电缸前进后退
 			backward(1);
-
-			for(int i=0;i<adapter1[0];i++)
+			
+			for(i=0;i<adapter1[0];i++)
 			delay_ms(adapter1[0]);
 			stop();
 			backward(2);
-			for(int i=0;i<adapter2[0];i++)
+			for(i=0;i<adapter2[0];i++)
 			delay_ms(adapter2[0]);
 			stop();
 			backward(3);
-			for(int i=0;i<adapter3[0];i++)
+			for(i=0;i<adapter3[0];i++)
 			delay_ms(adapter3[0]);
 			stop();
 			backward(4);
-			for(int i=0;i<adapter4[0];i++)
+			for(i=0;i<adapter4[0];i++)
 			delay_ms(adapter4[0]);
 			stop();
 			F_flag=2;
 		}
 		if(b_flag){
 			//抓住
+			int i;
 			forward(1);
-			for(int i=0;i<adapter1[0];i++)
+			for(i=0;i<adapter1[0];i++)
 			delay_ms(adapter1[0]);
 			stop();
 			forward(2);
-			for(int i=0;i<adapter2[0];i++)
+			for(i=0;i<adapter2[0];i++)
 			delay_ms(adapter2[0]);
 			stop();
 			forward(3);
-			for(int i=0;i<adapter3[0];i++)
+			for(i=0;i<adapter3[0];i++)
 			delay_ms(adapter3[0]);
 			stop();
 			forward(4);
-				for(int i=0;i<adapter4[0];i++)
+				for(i=0;i<adapter4[0];i++)
 			delay_ms(adapter4[0]);
 			stop();
 			b_flag=0;

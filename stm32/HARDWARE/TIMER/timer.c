@@ -1,6 +1,7 @@
 #include "timer.h"
 #include "led.h"
 #include "usart.h"
+#include "ultrasonic.h"
 //////////////////////////////////////////////////////////////////////////////////	 
 //本程序只供学习使用，未经作者许可，不得用于其它任何用途
 //ALIENTE精英STM32开发板
@@ -36,7 +37,7 @@ u8 L_flag,R_flag,P_flag,F_flag,G_flag,B_flag;//左手 右手 放下 脱机 读�
 extern u16 usart1_len,usart2_len;//串口数据长度
 u8 b_flag,s_flag;
 char information_all[50];
-
+extern u16 ultrasonic1,ultrasonic2;//超声波返回的定时器计数值
 void Usart_SendString(USART_TypeDef* USARTx,char *str){
 	while(*str){
 		while(!USART_GetFlagStatus(USARTx,USART_FLAG_TXE));
@@ -75,7 +76,6 @@ void TIM4_Int_Init(u16 arr,u16 psc)
 //定时器4中断服务程序
 void TIM4_IRQHandler(void)   //TIM4中断 步进电机的PWM
 {
-	char i;
 	if (TIM_GetITStatus(TIM4, TIM_IT_Update) != RESET) //检查指定的TIM中断发生与否:TIM 中断源 
 		{
 		TIM_ClearITPendingBit(TIM4, TIM_IT_Update  );  //清除TIMx的中断待处理位:TIM 中断源 
@@ -384,10 +384,10 @@ void get_motor(void)
 		
 			
 			if(F_flag==2){//脱机上升
-				motor1=num1;
-				motor2=num2;
-				motor3=num3;
-				motor4=num4;
+				//motor1=num1;
+				//motor2=num2;
+				//motor3=num3;
+				//motor4=num4;
 				ultrasonic1=0;
 				ultrasonic2=0;
 				trig_ultrasonic();
@@ -400,3 +400,5 @@ void get_motor(void)
 			}
 		
 }
+			}
+		}
