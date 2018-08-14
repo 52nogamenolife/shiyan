@@ -28,7 +28,7 @@ extern u16 motor1,motor2,motor3,motor4;//控制步进电机
 extern u16 mg1,mg2,mg3,mg4;//控制最上方的舵机
 u16 num;
 u8 flag;
-u8 L_flag,R_flag,P_flag,F_flag,G_flag;//左手 右手 放下 脱机 读取rfid
+u8 L_flag,R_flag,P_flag,F_flag,G_flag,B_flag;//左手 右手 放下 脱机 读取rfid 左右臂舵机回转
 extern u16 usart1_len,usart2_len;//串口数据长度
 void TIM4_Int_Init(u16 arr,u16 psc)
 {
@@ -55,7 +55,7 @@ void TIM4_Int_Init(u16 arr,u16 psc)
 							 
 }
 //定时器4中断服务程序
-void TIM4_IRQHandler(void)   //TIM4中断
+void TIM4_IRQHandler(void)   //TIM4中断 步进电机的PWM
 {
 	if (TIM_GetITStatus(TIM4, TIM_IT_Update) != RESET) //检查指定的TIM中断发生与否:TIM 中断源 
 		{
@@ -288,6 +288,20 @@ void get_motor(void)
 						}
 					}
 					break;
+				case 'B':
+					if(USART1_RX_BUF[1]=='q'){
+						B_flag=1;
+						while(USART1_RX_STA&0x8000&&USART1_RX_BUF[0]=='G'&&USART1_RX_BUF[1]=='q'){		
+						USART_SendData(USART1, 'B');
+						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+						USART_SendData(USART1, 'r');
+						USART1_RX_STA=0;
+						}
+					}
+					
+					
+					
+					
 				case 't'://步进电机
 					switch(USART1_RX_BUF[1]){
 						case 1:
@@ -328,17 +342,19 @@ void get_motor(void)
 		
 			/*
 			if(F_flag==2){//脱机上升
-			motor1=num1;
-			motor2=num2;
-			motor3=num3;
-			motor4=num4;
+				motor1=num1;
+				motor2=num2;
+				motor3=num3;
+				motor4=num4;
+				ultrasonic1=0;
+				ultrasonic2=0;
+				trig_ultrasonic();
 		}
-			else {//停止上升
-			motor1=0;
-			motor2=0;
-			motor3=0;
-			motor4=0;
-			
+			else if(F_flag==3) {//缓慢上升
+				speed1=120;
+				speed2=120;
+				speed3=120;
+				speed4=120;
 			}
 			*/
 }

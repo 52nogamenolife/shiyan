@@ -48,3 +48,13 @@ void backward(int n){
 	
 }
 
+void stop(void){
+	GPIO_ResetBits(GPIOA,GPIO_Pin_0);
+	GPIO_ResetBits(GPIOA,GPIO_Pin_1);
+	GPIO_ResetBits(GPIOA,GPIO_Pin_4);
+	GPIO_ResetBits(GPIOA,GPIO_Pin_5);
+	GPIO_ResetBits(GPIOA,GPIO_Pin_6);
+	GPIO_ResetBits(GPIOA,GPIO_Pin_7);
+	GPIO_ResetBits(GPIOA,GPIO_Pin_8);
+	GPIO_ResetBits(GPIOA,GPIO_Pin_11);
+}
