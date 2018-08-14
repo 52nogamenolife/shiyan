@@ -19,10 +19,11 @@
 #define dis_catch1 1850
 #define dis_catch2 1850
 u16 motor1=0,motor2=0,motor3=0,motor4=0;//控制步进电机
-u8 adapter1,adapter2,adapter3,adapter4;//步进电机的转动时间
+u8 adapter1[2],adapter2[2],adapter3[2],adapter4[2];//步进电机的转动时间
 u16 mg1,mg2,mg3,mg4;//控制最上方的舵机
 u16 usart1_len,usart2_len;//串口数据长度
 extern u8 L_flag,R_flag,P_flag,F_flag,G_flag;//左手 右手 放下 脱机 读取rfid
+extern u8 b_flag,s_flag;//电杠回缩,停止
  int main(void)
  {		
 	u16 t=0;
@@ -44,13 +45,18 @@ extern u8 L_flag,R_flag,P_flag,F_flag,G_flag;//左手 右手 放下 脱机 读取rfid
 		get_motor();//获取八个电机的运行参数
 		
 		
-		if(L_flag)
+		if(L_flag){
 			TIM_SetCompare1(TIM3,mg1);//左手舵机
-		if(R_flag)
+			L_flag=0;
+		}
+		if(R_flag){
 			TIM_SetCompare2(TIM3,mg2);//右手舵机
+			R_flag=0;
+		}
 		if(P_flag){//放下
 			TIM_SetCompare1(TIM3,0);
 			TIM_SetCompare2(TIM3,0);
+			P_flag=0;	
 		}
 		
 		
@@ -70,16 +76,47 @@ extern u8 L_flag,R_flag,P_flag,F_flag,G_flag;//左手 右手 放下 脱机 读取rfid
 		if(F_flag){
 			//抓住
 			backward(1);
-			delay_ms(adapter1);
+			for(int i=0;i<adapter1[0];i++)
+			delay_ms(adapter1[0]);
+			stop();
 			backward(2);
-			delay_ms(adapter2);
+			for(int i=0;i<adapter2[0];i++)
+			delay_ms(adapter2[0]);
+			stop();
 			backward(3);
-			delay_ms(adapter3);
+			for(int i=0;i<adapter3[0];i++)
+			delay_ms(adapter3[0]);
+			stop();
 			backward(4);
-			delay_ms(adapter4);	
-			
-			F_flag=2;
+			for(int i=0;i<adapter4[0];i++)
+			delay_ms(adapter4[0]);
+			stop();
+			F_flag=0;
 		}
+		if(b_flag){
+			//抓住
+			forward(1);
+			for(int i=0;i<adapter1[0];i++)
+			delay_ms(adapter1[0]);
+			stop();
+			forward(2);
+			for(int i=0;i<adapter2[0];i++)
+			delay_ms(adapter2[0]);
+			stop();
+			forward(3);
+			for(int i=0;i<adapter3[0];i++)
+			delay_ms(adapter3[0]);
+			stop();
+			forward(4);
+				for(int i=0;i<adapter4[0];i++)
+			delay_ms(adapter4[0]);
+			stop();
+			b_flag=0;
+		}
+		if(s_flag){
+			stop();
+			s_flag=0;
+				}
 	}
 	
 	

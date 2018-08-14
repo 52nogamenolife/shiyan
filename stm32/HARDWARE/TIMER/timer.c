@@ -24,12 +24,30 @@
 //psc：时钟预分频数
 //这里使用的是定时器3!
 
-extern u16 motor1,motor2,motor3,motor4;//控制步进电机
+extern u16 motor1,motor2,motor3,motor4;//控制步进电
+u8 speed1,speed2,speed3,speed4; 
+extern u8 looptime,delaytime;
+u8 speed1flag,speed2flag,speed3flag,speed4flag; 
 extern u16 mg1,mg2,mg3,mg4;//控制最上方的舵机
+extern u8 adapter1[2],adapter2[2],adapter3[2],adapter4[2];//步进电机的转动时间
 u16 num;
 u8 flag;
 u8 L_flag,R_flag,P_flag,F_flag,G_flag;//左手 右手 放下 脱机 读取rfid
 extern u16 usart1_len,usart2_len;//串口数据长度
+u8 b_flag,s_flag;
+char information_all[50];
+
+void Usart_SendString(USART_TypeDef* USARTx,char *str){
+	while(*str){
+		while(!USART_GetFlagStatus(USARTx,USART_FLAG_TXE));
+		USART_SendData(USARTx,*str);
+		while(USART_GetFlagStatus(USARTx, USART_FLAG_TC)); 
+		str++;           
+  }
+}
+
+
+
 void TIM4_Int_Init(u16 arr,u16 psc)
 {
   TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
@@ -57,23 +75,21 @@ void TIM4_Int_Init(u16 arr,u16 psc)
 //定时器4中断服务程序
 void TIM4_IRQHandler(void)   //TIM4中断
 {
+	char i;
 	if (TIM_GetITStatus(TIM4, TIM_IT_Update) != RESET) //检查指定的TIM中断发生与否:TIM 中断源 
 		{
 		TIM_ClearITPendingBit(TIM4, TIM_IT_Update  );  //清除TIMx的中断待处理位:TIM 中断源 
-		}
+		speed1flag++;speed2flag++;speed3flag++;speed4flag++;
+		if(speed1flag==speed1){
 		if(motor1){
 			if(GPIO_ReadOutputDataBit(GPIOB,GPIO_Pin_6)){
-				
 				GPIO_ResetBits(GPIOB,GPIO_Pin_6);
-				motor1--;
-			}
+				motor1--;}
 			else {
-			GPIO_SetBits(GPIOB,GPIO_Pin_6);
-			
-			
-			}
+				GPIO_SetBits(GPIOB,GPIO_Pin_6);}}
+		speed1flag=0;	
 		}
-		
+		if(speed2flag==speed2){
 		if(motor2){
 			if(GPIO_ReadOutputDataBit(GPIOB,GPIO_Pin_7)){
 				
@@ -82,23 +98,20 @@ void TIM4_IRQHandler(void)   //TIM4中断
 			}
 			else {
 			GPIO_SetBits(GPIOB,GPIO_Pin_7);
-			
-			
-			}
-		}
-		if(motor3){
-			if(GPIO_ReadOutputDataBit(GPIOB,GPIO_Pin_8)){
-				
-				GPIO_ResetBits(GPIOB,GPIO_Pin_8);
-				motor3--;
-			}
+			}}
+		speed2flag=0;}
+		if(speed3flag==speed3){
+			if(motor3){
+				if(GPIO_ReadOutputDataBit(GPIOB,GPIO_Pin_8)){
+					GPIO_ResetBits(GPIOB,GPIO_Pin_8);
+					motor3--;
+				}
 			else {
-			GPIO_SetBits(GPIOB,GPIO_Pin_8);
-			
-			
+				GPIO_SetBits(GPIOB,GPIO_Pin_8);
 			}
 		}
-		
+			speed3flag=0;}
+	if(speed4flag==speed4){
 		if(motor4){
 			if(GPIO_ReadOutputDataBit(GPIOB,GPIO_Pin_9)){
 				
@@ -108,15 +121,10 @@ void TIM4_IRQHandler(void)   //TIM4中断
 			else {
 			GPIO_SetBits(GPIOB,GPIO_Pin_9);
 			
-			
 			}
 		}
-		
-		
-
-
-
-
+				speed3flag=0;}
+	}
 }
 
 //TIM3 PWM部分初始化 
@@ -288,40 +296,81 @@ void get_motor(void)
 						}
 					}
 					break;
-				case 't'://步进电机
+				case 'a':{ //ask 询问所有信息
+				
+				sprintf(information_all,"motor %d %d %d %d \n speed %d %d %d %d \n diangang %d %d %d %d %d %d %d %d \n mg %d %d %d %d\n mgyanshi looptime%d  delaytime%d ",motor1,motor2,motor3,motor4,
+					speed1,speed2,speed3,speed4,
+					adapter1[0],adapter1[1],adapter2[0],adapter2[1],adapter3[0],adapter3[1],adapter4[0],adapter4[1]
+					,mg1,mg2,mg3,mg4,looptime,delaytime);
+				
+				}
+				case 'b': //爬杆臂松手
+					if(USART1_RX_BUF[1]=='q'){
+						b_flag=1;
+						while(USART1_RX_STA&0x8000&&USART1_RX_BUF[0]=='h'&&USART1_RX_BUF[1]=='q'){		
+						USART_SendData(USART1, 'h');
+						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+						USART_SendData(USART1, 'r');
+						USART1_RX_STA=0;
+						}
+					}
+					case 's'://停止
+					{
+						s_flag=1;
+						while(USART1_RX_STA&0x8000&&USART1_RX_BUF[0]=='s'){		
+						USART_SendData(USART1, 's');
+						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+						USART1_RX_STA=0;
+						}
+					}
+					break;
+				case 't': //设置步进电机目标行程和速度
 					switch(USART1_RX_BUF[1]){
 						case 1:
 							motor1=USART1_RX_BUF[2];
+							motor1=(motor1<<8)+USART1_RX_BUF[3];
+							speed1=USART1_RX_BUF[4];
 							break;
 						case 2:
 							motor2=USART1_RX_BUF[2];
+							motor2=(motor2<<8)+USART1_RX_BUF[3];
+							speed2=USART1_RX_BUF[4];
 							break;
 						case 3:
 							motor3=USART1_RX_BUF[2];
+							motor3=(motor3<<8)+USART1_RX_BUF[3];
+							speed3=USART1_RX_BUF[4];
 							break;
 						case 4:
 							motor4=USART1_RX_BUF[2];
+							motor4=(motor4<<8)+USART1_RX_BUF[3];
+							speed4=USART1_RX_BUF[4];	
 							break;
 						default:
 							break;
 					}
-					case 'g':
-						switch(USART1_RX_BUF[1]){
+					case 'd'://设置电缸行程
+					switch(USART1_RX_BUF[1]){
 						case 1:
-							mg1=USART1_RX_BUF[2];
+							adapter1[0]=USART1_RX_BUF[2];
+						  adapter1[1]=USART1_RX_BUF[3];
 							break;
 						case 2:
-							mg2=USART1_RX_BUF[2];
+							adapter2[0]=USART1_RX_BUF[2];
+						  adapter2[1]=USART1_RX_BUF[3];
 							break;
 						case 3:
-							mg3=USART1_RX_BUF[2];
+							adapter3[0]=USART1_RX_BUF[2];
+						  adapter3[1]=USART1_RX_BUF[3];
 							break;
 						case 4:
-							mg4=USART1_RX_BUF[2];
+							adapter4[0]=USART1_RX_BUF[2];
+						  adapter4[1]=USART1_RX_BUF[3];
 							break;
 						default:
 							break;
 					}
+					
 				}
 			
 		}
@@ -341,4 +390,14 @@ void get_motor(void)
 			
 			}
 			*/
+	
+	if(1)
+		mg1=num;
+	if(1)
+		mg2=num;
+	if(1)
+		mg3=num;
+	if(1)
+		mg4=num;
+
 }

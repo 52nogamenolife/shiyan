@@ -1,5 +1,19 @@
 #include "adapter.h"
 //#include "led.h"
+
+void stop(void)
+{
+	
+	GPIO_ReSetBits(GPIOA,GPIO_Pin_0);
+	GPIO_ResetBits(GPIOA,GPIO_Pin_1);
+	GPIO_ReSetBits(GPIOA,GPIO_Pin_4);
+	GPIO_ResetBits(GPIOA,GPIO_Pin_5);
+	GPIO_ReSetBits(GPIOA,GPIO_Pin_6);
+	GPIO_ResetBits(GPIOA,GPIO_Pin_7);
+	GPIO_ReSetBits(GPIOA,GPIO_Pin_8);
+	GPIO_ResetBits(GPIOA,GPIO_Pin_11);
+
+}
 void forward(int n){
 	switch(n){
 		case 1:
