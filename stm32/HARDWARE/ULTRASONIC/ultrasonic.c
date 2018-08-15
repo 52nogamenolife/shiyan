@@ -13,9 +13,6 @@ void TIM1_Configuration(short arr,short psc){
 TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
 
 
-
-RCC_APB1PeriphClockCmd(RCC_APB2Periph_TIM1, ENABLE);
-
 TIM_TimeBaseStructure.TIM_Prescaler = psc; //72M/72=1M 
 TIM_TimeBaseStructure.TIM_Period = arr; //20ms overflow
 TIM_TimeBaseStructure.TIM_ClockDivision = 0x0; //
@@ -35,9 +32,6 @@ TIM_Cmd(TIM1, ENABLE);
 void ultrasonic_GPIO_init(void){//io¿ÚµÄÅäÖÃ
 GPIO_InitTypeDef GPIO_InitStructure;
 EXTI_InitTypeDef EXTI_InitStructure;
-
-RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOE, ENABLE);
-RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO, ENABLE);
 
 /* 
 PE9 CH1 DJ // PE10 CH2 MD // PE11 CH6 adjust */

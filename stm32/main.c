@@ -31,27 +31,87 @@ extern u8 b_flag,s_flag;//电杠回缩,停止
 extern u8 L_flag,R_flag,P_flag,F_flag,G_flag,B_flag;//左手 右手 放下 脱机 读取rfid 左右臂舵机回转
 extern u16 ultrasonic1,ultrasonic2;//超声波返回的定时器计数值
 
+
+void assert_failed(uint8_t* file, uint32_t line)
+{
+ printf("Wrong parameters value: file %s on line %d\r\n", file, line);
+ while(1);
+}
+
+
  int main(void)
  {		
-	u16 t=0;
+	RCC_init();
+	switch_GPIO_init();
+	 
+	GPIO_SetBits(GPIOE,GPIO_Pin_5);
+	//KEY_Init(); //初始化与案件链接的硬件接口
+	GPIO_SetBits(GPIOB,GPIO_Pin_5);
+	//while(KEY_Scan(0)!=1);
 	
-	delay_init();	    	 //延时函数初始化	  
-	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2); 	 //设置NVIC中断分组2:2位抢占优先级，2位响应优先级
-	uart1_init(115200);	 //串口初始化为115200 负责蓝牙通信 上下机
- 	uart2_init(115200);	 //串口初始化为115200 负责读取rfid
+	GPIO_ResetBits(GPIOE,GPIO_Pin_5);
+	delay_init();	    	 //延时函数初始化	 
+	GPIO_ResetBits(GPIOB,GPIO_Pin_5);
+	GPIO_SetBits(GPIOE,GPIO_Pin_5);
+	//while(KEY_Scan(0)!=1);
+	delay_ms(1000);
+	//NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2); 	 //设置NVIC中断分组2:2位抢占优先级，2位响应优先级
+	 
+	uart1_init(9600);	 //串口初始化为115200 负责蓝牙通信 上下机
+	GPIO_ResetBits(GPIOE,GPIO_Pin_5);
+	GPIO_SetBits(GPIOB,GPIO_Pin_5);
+	//while(KEY_Scan(0)!=1);
+	delay_ms(1000);
+	
+ 	uart2_init(9600);	 //串口初始化为115200 负责读取rfid
+	GPIO_ResetBits(GPIOB,GPIO_Pin_5);
+	GPIO_SetBits(GPIOE,GPIO_Pin_5);
+//	while(KEY_Scan(0)!=1);
+	delay_ms(1000);
+	
 	LED_Init();			     //LED端口初始化
+	GPIO_ResetBits(GPIOE,GPIO_Pin_5);
+	GPIO_SetBits(GPIOB,GPIO_Pin_5);
+	//while(KEY_Scan(0)!=1);
+	delay_ms(1000);
+	
  	TIM3_PWM_Init(1999,719);	 //720分频。PWM频率=72000000/720/2000=50hz
-	TIM4_Int_Init(71,1);	 //分频2。PWM频率=72000000/72/2=500Khz
+	GPIO_ResetBits(GPIOB,GPIO_Pin_5);
+	GPIO_SetBits(GPIOE,GPIO_Pin_5);
+	//while(KEY_Scan(0)!=1);
+	delay_ms(1000);
+	
+	
+	TIM4_Int_Init(9999,71);	 //分频2。PWM频率=72000000/72/2=500Khz
+	GPIO_ResetBits(GPIOE,GPIO_Pin_5);
+	GPIO_SetBits(GPIOB,GPIO_Pin_5);
+	//while(KEY_Scan(0)!=1);
+	delay_ms(1000);
+	
 	 //超声波配置
 	TIM1_Configuration(19999,71);
+	GPIO_ResetBits(GPIOB,GPIO_Pin_5);
+	GPIO_SetBits(GPIOE,GPIO_Pin_5);
+	//while(KEY_Scan(0)!=1);
+	delay_ms(1000);
+	
 	ultrasonic_GPIO_init();
+	GPIO_ResetBits(GPIOE,GPIO_Pin_5);
+	GPIO_SetBits(GPIOB,GPIO_Pin_5);
+	//while(KEY_Scan(0)!=1);
+	delay_ms(1000);
+	
 	ultrasonic_IRQ_init();
+	GPIO_ResetBits(GPIOB,GPIO_Pin_5);
+	GPIO_SetBits(GPIOE,GPIO_Pin_5);
+	//while(KEY_Scan(0)!=1);
+	delay_ms(1000);
+	 
    	while(1)
-	{
- 		delay_ms(30);//这个延时决定了电机的参数获取速度，即电机的PWM的周期
-		
+		{
+	
 		get_motor();//获取以及设置八个电机的运行参数
-		
+		/*
 		if(L_flag){
 			int i;
 			TIM_SetCompare1(TIM3,mg1);//左手舵机
@@ -155,6 +215,7 @@ extern u16 ultrasonic1,ultrasonic2;//超声波返回的定时器计数值
 		if(ultrasonic1>=7100||ultrasonic2>=7100){
 			F_flag=3;
 		}
+		*/
 	}
 	
  }

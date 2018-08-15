@@ -47,14 +47,12 @@ void Usart_SendString(USART_TypeDef* USARTx,char *str){
   }
 }
 
-
-
 void TIM4_Int_Init(u16 arr,u16 psc)
 {
   TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
 	NVIC_InitTypeDef NVIC_InitStructure;
 
-	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM4, ENABLE); //时钟使能
+
 
 	TIM_TimeBaseStructure.TIM_Period = arr; //设置在下一个更新事件装入活动的自动重装载寄存器周期的值	 计数到5000为500ms
 	TIM_TimeBaseStructure.TIM_Prescaler =psc; //设置用来作为TIMx时钟频率除数的预分频值  10Khz的计数频率  
@@ -138,8 +136,7 @@ void TIM3_PWM_Init(u16 arr,u16 psc)
 	TIM_OCInitTypeDef  TIM_OCInitStructure;
 	
 
-	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, ENABLE);	//使能定时器3时钟
- 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB  | RCC_APB2Periph_AFIO, ENABLE);  //使能GPIO外设和AFIO复用功能模块时钟
+
 	
 	GPIO_PinRemapConfig(GPIO_PartialRemap_TIM3, ENABLE); //Timer3部分重映射  TIM3_CH2->PB5   TIM3_CH1->PB4 TIM3_CH3->PB0 TIM3_CH4->PB1           
  
@@ -240,6 +237,7 @@ void get_motor(void)
 		{
 		
 			usart1_len = USART1_RX_STA&0x3fff;//得到此次接收到的数据长度	
+			
 			switch (USART1_RX_BUF[0]) {
 				case 'L':
 					if(USART1_RX_BUF[1]=='q'){
@@ -297,30 +295,38 @@ void get_motor(void)
 					}
 					break;
 
-				case 'a':{ //ask 询问所有信息
+				case 'a': //ask 询问所有信息
 				
-				sprintf(information_all,"motor %d %d %d %d \n speed %d %d %d %d \n diangang %d %d %d %d %d %d %d %d \n mg %d %d %d %d\n mgyanshi looptime%d  delaytime%d ",motor1,motor2,motor3,motor4,
+				sprintf(information_all,"motor %d %d %d %d \r\n speed %d %d %d %d \r\n diangang %d %d %d %d %d %d %d %d \r\n mg %d %d %d %d\r\n mgyanshi looptime%d  delaytime%d\n ",motor1,motor2,motor3,motor4,
 					speed1,speed2,speed3,speed4,
 					adapter1[0],adapter1[1],adapter2[0],adapter2[1],adapter3[0],adapter3[1],adapter4[0],adapter4[1]
 					,mg1,mg2,mg3,mg4,looptime,delaytime);
+				Usart_SendString(USART1,information_all);
+					break;
 				
-				}
 				case 'b': //爬杆臂松手
 					if(USART1_RX_BUF[1]=='q'){
 						b_flag=1;
-						while(USART1_RX_STA&0x8000&&USART1_RX_BUF[0]=='h'&&USART1_RX_BUF[1]=='q'){		
-						USART_SendData(USART1, 'h');
+						while(USART1_RX_STA&0x8000&&USART1_RX_BUF[0]=='b'&&USART1_RX_BUF[1]=='q'){		
+							USART_SendData(USART1, 'h');
+							USART1_RX_STA=0;
+						}
+					}
+					break;
 				case 'B':
 					if(USART1_RX_BUF[1]=='q'){
 						B_flag=1;
-						while(USART1_RX_STA&0x8000&&USART1_RX_BUF[0]=='G'&&USART1_RX_BUF[1]=='q'){		
+						
+						while(USART1_RX_STA&0x8000&&USART1_RX_BUF[0]=='B'&&USART1_RX_BUF[1]=='q'){		
 						USART_SendData(USART1, 'B');
+							
 						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 						USART_SendData(USART1, 'r');
+							
 						USART1_RX_STA=0;
 						}
 					}
-
+					break;
 					case 's'://停止
 					{
 						s_flag=1;
@@ -335,32 +341,67 @@ void get_motor(void)
 					switch(USART1_RX_BUF[1]){
 						case 1:
 							motor1=USART1_RX_BUF[2];
-							motor1=(motor1<<8)+USART1_RX_BUF[3];
-							speed1=USART1_RX_BUF[4];
+							motor1*=256;
+							motor1+=USART1_RX_BUF[3];
+							speed1=USART1_RX_BUF[4];	
 							break;
 						case 2:
 							motor2=USART1_RX_BUF[2];
-							motor2=(motor2<<8)+USART1_RX_BUF[3];
+							motor2*=256;
+							motor2+=USART1_RX_BUF[3];
 							speed2=USART1_RX_BUF[4];
 							break;
 						case 3:
 							motor3=USART1_RX_BUF[2];
-							motor3=(motor3<<8)+USART1_RX_BUF[3];
+							motor3*=256;
+							motor3+=USART1_RX_BUF[3];
 							speed3=USART1_RX_BUF[4];
 							break;
 						case 4:
 							motor4=USART1_RX_BUF[2];
-							motor4=(motor4<<8)+USART1_RX_BUF[3];
+							motor4*=256;
+							motor4+=USART1_RX_BUF[3];
 							speed4=USART1_RX_BUF[4];	
+							break;
+							default:
+							break;
+					}
+						case 'g': //设置步进电机目标行程和速度
+					switch(USART1_RX_BUF[1]){
+						case 1:
+							mg1=USART1_RX_BUF[2];
+							mg1*=256;
+							mg1+=USART1_RX_BUF[3];
+							break;
+						case 2:
+							mg2=USART1_RX_BUF[2];
+							mg2*=256;
+							mg2+=USART1_RX_BUF[3];
+							break;
+						case 3:
+							mg3=USART1_RX_BUF[2];
+							mg3*=256;
+							mg3+=USART1_RX_BUF[3];
+							break;
+						case 4:
+							mg4=USART1_RX_BUF[2];
+							mg4*=256;
+							mg4+=USART1_RX_BUF[3];
 							break;
 						default:
 							break;
 					}
+					break;
 					case 'd'://设置电缸行程
 					switch(USART1_RX_BUF[1]){
+						case 't':
+							delaytime = USART1_RX_BUF[2];
+							looptime = USART1_RX_BUF[3];
+							break;
 						case 1:
 							adapter1[0]=USART1_RX_BUF[2];
 						  adapter1[1]=USART1_RX_BUF[3];
+						
 							break;
 						case 2:
 							adapter2[0]=USART1_RX_BUF[2];
@@ -377,11 +418,16 @@ void get_motor(void)
 						default:
 							break;
 					}
-					
+					USART_SendData(USART1, 'O');
+			while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+			USART_SendData(USART1, 'K');
+			while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+					break;
+					default:
+						break;
 				}
-			
-		}
-		
+			USART1_RX_STA=0;
+					
 			
 			if(F_flag==2){//脱机上升
 				//motor1=num1;
@@ -398,7 +444,12 @@ void get_motor(void)
 				speed3=120;
 				speed4=120;
 			}
-		
+				
+	}
 }
-			}
-		}
+void RCC_init(void){
+		RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3|RCC_APB1Periph_TIM4|RCC_APB2Periph_TIM1, ENABLE);	//使能定时器3 4时钟
+ 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB  | RCC_APB2Periph_AFIO, ENABLE);  //使能GPIO外设和AFIO复用功能模块时钟
+	 RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA|RCC_APB2Periph_GPIOE,ENABLE);//Ê¹ÄÜPORTA,PORTEÊ±ÖÓ
+
+}
