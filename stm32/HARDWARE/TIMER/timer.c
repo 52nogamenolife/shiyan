@@ -25,17 +25,17 @@
 //psc：时钟预分频数
 //这里使用的是定时器3!
 
-extern u16 motor1,motor2,motor3,motor4;//控制步进电
-u8 speed1,speed2,speed3,speed4; 
+u16 motor1=0,motor2=0,motor3=0,motor4=0;//控制步进电
+u8 speed1=5,speed2=5,speed3=5,speed4=5; 
 extern u8 looptime,delaytime;
 u8 speed1flag,speed2flag,speed3flag,speed4flag; 
 extern u16 mg1,mg2,mg3,mg4;//控制最上方的舵机
 extern u8 adapter1[2],adapter2[2],adapter3[2],adapter4[2];//步进电机的转动时间
 u16 num;
 u8 flag;
-u8 L_flag,R_flag,P_flag,F_flag,G_flag,B_flag;//左手 右手 放下 脱机 读取rfid 左右臂舵机回转
+u8 L_flag=0,R_flag=0,P_flag=0,F_flag=0,G_flag=0,B_flag=0;//左手 右手 放下 脱机 读取rfid 左右臂舵机回转
 extern u16 usart1_len,usart2_len;//串口数据长度
-u8 b_flag,s_flag;
+u8 b_flag=1,s_flag=1;
 char information_all[50];
 extern u16 ultrasonic1,ultrasonic2;//超声波返回的定时器计数值
 void Usart_SendString(USART_TypeDef* USARTx,char *str){
@@ -100,12 +100,12 @@ void TIM4_IRQHandler(void)   //TIM4中断 步进电机的PWM
 		speed2flag=0;}
 		if(speed3flag==speed3){
 			if(motor3){
-				if(GPIO_ReadOutputDataBit(GPIOB,GPIO_Pin_8)){
-					GPIO_ResetBits(GPIOB,GPIO_Pin_8);
+				if(GPIO_ReadOutputDataBit(GPIOB,GPIO_Pin_5)){
+					GPIO_ResetBits(GPIOB,GPIO_Pin_5);
 					motor3--;
 				}
 			else {
-				GPIO_SetBits(GPIOB,GPIO_Pin_8);
+				GPIO_SetBits(GPIOB,GPIO_Pin_5);
 			}
 		}
 			speed3flag=0;}
@@ -134,17 +134,15 @@ void TIM3_PWM_Init(u16 arr,u16 psc)
 	GPIO_InitTypeDef GPIO_InitStructure;
 	TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
 	TIM_OCInitTypeDef  TIM_OCInitStructure;
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB  | RCC_APB2Periph_AFIO, ENABLE);  //使能GPIO外设和AFIO复用功能模块时钟
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, ENABLE);	//使能定时器3 4时钟
 	
-
-
-	
-	GPIO_PinRemapConfig(GPIO_PartialRemap_TIM3, ENABLE); //Timer3部分重映射  TIM3_CH2->PB5   TIM3_CH1->PB4 TIM3_CH3->PB0 TIM3_CH4->PB1           
  
-   //设置该引脚为复用输出功能,输出TIM3 CH1的PWM脉冲波形	GPIOB.4
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_4; //TIM_CH1
+   //设置该引脚为复用输出功能,输出TIM3 CH1的PWM脉冲波形	GPIOA.6
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6; //TIM_CH1
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;  //复用推挽输出
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-	GPIO_Init(GPIOB, &GPIO_InitStructure);//初始化GPIO
+	GPIO_Init(GPIOA, &GPIO_InitStructure);//初始化GPIO
  
    //初始化TIM3
 	TIM_TimeBaseStructure.TIM_Period = arr; //设置在下一个更新事件装入活动的自动重装载寄存器周期的值
@@ -162,18 +160,13 @@ void TIM3_PWM_Init(u16 arr,u16 psc)
 	TIM_OC1PreloadConfig(TIM3, TIM_OCPreload_Enable);  //使能TIM3在CCR1上的预装载寄存器
 	
 	
-   //设置该引脚为复用输出功能,输出TIM3 CH2的PWM脉冲波形	GPIOB.5
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_5; //TIM_CH2
+   //设置该引脚为复用输出功能,输出TIM3 CH2的PWM脉冲波形	GPIOA.7
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_7; //TIM_CH2
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;  //复用推挽输出
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-	GPIO_Init(GPIOB, &GPIO_InitStructure);//初始化GPIO
+	GPIO_Init(GPIOA, &GPIO_InitStructure);//初始化GPIO
  
    //初始化TIM3
-	TIM_TimeBaseStructure.TIM_Period = arr; //设置在下一个更新事件装入活动的自动重装载寄存器周期的值
-	TIM_TimeBaseStructure.TIM_Prescaler =psc; //设置用来作为TIMx时钟频率除数的预分频值 
-	TIM_TimeBaseStructure.TIM_ClockDivision = 0; //设置时钟分割:TDTS = Tck_tim
-	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;  //TIM向上计数模式
-	TIM_TimeBaseInit(TIM3, &TIM_TimeBaseStructure); //根据TIM_TimeBaseInitStruct中指定的参数初始化TIMx的时间基数单位
 	
 	//初始化TIM3 Channel2 PWM模式	 
 	TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM2; //选择定时器模式:TIM脉冲宽度调制模式2
@@ -190,11 +183,6 @@ void TIM3_PWM_Init(u16 arr,u16 psc)
 	GPIO_Init(GPIOB, &GPIO_InitStructure);//初始化GPIO
  
    //初始化TIM3
-	TIM_TimeBaseStructure.TIM_Period = arr; //设置在下一个更新事件装入活动的自动重装载寄存器周期的值
-	TIM_TimeBaseStructure.TIM_Prescaler =psc; //设置用来作为TIMx时钟频率除数的预分频值 
-	TIM_TimeBaseStructure.TIM_ClockDivision = 0; //设置时钟分割:TDTS = Tck_tim
-	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;  //TIM向上计数模式
-	TIM_TimeBaseInit(TIM3, &TIM_TimeBaseStructure); //根据TIM_TimeBaseInitStruct中指定的参数初始化TIMx的时间基数单位
 	
 	//初始化TIM3 Channel2 PWM模式	 
 	TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM2; //选择定时器模式:TIM脉冲宽度调制模式2
@@ -211,11 +199,6 @@ void TIM3_PWM_Init(u16 arr,u16 psc)
 	GPIO_Init(GPIOB, &GPIO_InitStructure);//初始化GPIO
  
    //初始化TIM3
-	TIM_TimeBaseStructure.TIM_Period = arr; //设置在下一个更新事件装入活动的自动重装载寄存器周期的值
-	TIM_TimeBaseStructure.TIM_Prescaler =psc; //设置用来作为TIMx时钟频率除数的预分频值 
-	TIM_TimeBaseStructure.TIM_ClockDivision = 0; //设置时钟分割:TDTS = Tck_tim
-	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;  //TIM向上计数模式
-	TIM_TimeBaseInit(TIM3, &TIM_TimeBaseStructure); //根据TIM_TimeBaseInitStruct中指定的参数初始化TIMx的时间基数单位
 	
 	//初始化TIM3 Channel2 PWM模式	 
 	TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM2; //选择定时器模式:TIM脉冲宽度调制模式2
@@ -235,39 +218,44 @@ void get_motor(void)
 {
 	if(USART1_RX_STA&0x8000)//是否有接收到东西
 		{
-		
 			usart1_len = USART1_RX_STA&0x3fff;//得到此次接收到的数据长度	
 			
 			switch (USART1_RX_BUF[0]) {
 				case 'L':
 					if(USART1_RX_BUF[1]=='q'){
-						L_flag=1;
+						if(!L_flag)
+							L_flag=1;
 						while(USART1_RX_STA&0x8000&&USART1_RX_BUF[0]=='L'&&USART1_RX_BUF[1]=='q'){		
 						USART_SendData(USART1, 'L');
 						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 						USART_SendData(USART1, 'r');
+						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 						USART1_RX_STA=0;
 						}
 					}
 					break;
-				case 'R': 
+				case 'R':
 					if(USART1_RX_BUF[1]=='q'){
-						R_flag=1;
+						if(!R_flag)
+							R_flag=1;
 						while(USART1_RX_STA&0x8000&&USART1_RX_BUF[0]=='R'&&USART1_RX_BUF[1]=='q'){		
 						USART_SendData(USART1, 'R');
 						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 						USART_SendData(USART1, 'r');
+						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 						USART1_RX_STA=0;
 						}
 					}
 					break;
 				case 'P': 
 					if(USART1_RX_BUF[1]=='q'){
-						P_flag=1;
+						if(!P_flag)
+							P_flag=1;
 						while(USART1_RX_STA&0x8000&&USART1_RX_BUF[0]=='P'&&USART1_RX_BUF[1]=='q'){		
 						USART_SendData(USART1, 'P');
 						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 						USART_SendData(USART1, 'r');
+						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 						USART1_RX_STA=0;
 						}
 					}
@@ -279,6 +267,7 @@ void get_motor(void)
 						USART_SendData(USART1, 'F');
 						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 						USART_SendData(USART1, 'r');
+						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 						USART1_RX_STA=0;
 						}
 					}
@@ -290,6 +279,7 @@ void get_motor(void)
 						USART_SendData(USART1, 'G');
 						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 						USART_SendData(USART1, 'r');
+						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 						USART1_RX_STA=0;
 						}
 					}
@@ -309,20 +299,22 @@ void get_motor(void)
 						b_flag=1;
 						while(USART1_RX_STA&0x8000&&USART1_RX_BUF[0]=='b'&&USART1_RX_BUF[1]=='q'){		
 							USART_SendData(USART1, 'h');
+							while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 							USART1_RX_STA=0;
 						}
 					}
 					break;
 				case 'B':
 					if(USART1_RX_BUF[1]=='q'){
-						B_flag=1;
+						if(!B_flag)
+							B_flag=1;
 						
 						while(USART1_RX_STA&0x8000&&USART1_RX_BUF[0]=='B'&&USART1_RX_BUF[1]=='q'){		
 						USART_SendData(USART1, 'B');
 							
 						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 						USART_SendData(USART1, 'r');
-							
+						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成		
 						USART1_RX_STA=0;
 						}
 					}
@@ -344,24 +336,32 @@ void get_motor(void)
 							motor1*=256;
 							motor1+=USART1_RX_BUF[3];
 							speed1=USART1_RX_BUF[4];	
+							USART_SendData(USART1, 'T');
+							while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 							break;
 						case 2:
 							motor2=USART1_RX_BUF[2];
 							motor2*=256;
 							motor2+=USART1_RX_BUF[3];
 							speed2=USART1_RX_BUF[4];
+							USART_SendData(USART1, 'T');
+							while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 							break;
 						case 3:
 							motor3=USART1_RX_BUF[2];
 							motor3*=256;
 							motor3+=USART1_RX_BUF[3];
 							speed3=USART1_RX_BUF[4];
+							USART_SendData(USART1, 'T');
+							while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 							break;
 						case 4:
 							motor4=USART1_RX_BUF[2];
 							motor4*=256;
 							motor4+=USART1_RX_BUF[3];
 							speed4=USART1_RX_BUF[4];	
+							USART_SendData(USART1, 'T');
+							while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 							break;
 							default:
 							break;
@@ -372,21 +372,30 @@ void get_motor(void)
 							mg1=USART1_RX_BUF[2];
 							mg1*=256;
 							mg1+=USART1_RX_BUF[3];
+							USART_SendData(USART1, 'T');
+							while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 							break;
+						
 						case 2:
 							mg2=USART1_RX_BUF[2];
 							mg2*=256;
 							mg2+=USART1_RX_BUF[3];
+							USART_SendData(USART1, 'T');
+							while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 							break;
 						case 3:
 							mg3=USART1_RX_BUF[2];
 							mg3*=256;
 							mg3+=USART1_RX_BUF[3];
+							USART_SendData(USART1, 'T');
+							while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 							break;
 						case 4:
 							mg4=USART1_RX_BUF[2];
 							mg4*=256;
 							mg4+=USART1_RX_BUF[3];
+							USART_SendData(USART1, 'T');
+							while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 							break;
 						default:
 							break;
@@ -418,7 +427,7 @@ void get_motor(void)
 						default:
 							break;
 					}
-					USART_SendData(USART1, 'O');
+			USART_SendData(USART1, 'O');
 			while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 			USART_SendData(USART1, 'K');
 			while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
@@ -430,10 +439,10 @@ void get_motor(void)
 					
 			
 			if(F_flag==2){//脱机上升
-				//motor1=num1;
-				//motor2=num2;
-				//motor3=num3;
-				//motor4=num4;
+				motor1=1000;
+				motor2=1000;
+				motor3=1000;
+				motor4=1000;
 				ultrasonic1=0;
 				ultrasonic2=0;
 				trig_ultrasonic();
@@ -449,7 +458,9 @@ void get_motor(void)
 }
 void RCC_init(void){
 		RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3|RCC_APB1Periph_TIM4|RCC_APB2Periph_TIM1, ENABLE);	//使能定时器3 4时钟
+	
  	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB  | RCC_APB2Periph_AFIO, ENABLE);  //使能GPIO外设和AFIO复用功能模块时钟
+	
 	 RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA|RCC_APB2Periph_GPIOE,ENABLE);//Ê¹ÄÜPORTA,PORTEÊ±ÖÓ
 
 }

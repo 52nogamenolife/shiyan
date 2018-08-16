@@ -1,6 +1,7 @@
 # RoboGame
-已经使用的io口：PA2 PA3 PA9 PA10 PB0 PB1 PB4 PB5 PB6 PB7 PB8 PB9 PE7 PE8 PE9 PE10 PE11
-#四个舵机使用TIM3的四个通道使用引脚为PB4 PB5 PB0 PB1
+已经使用的io口：PA2 PA3 PA0 PA1;PA4 PA5 PA6 PA7;PA14 PA11 PA9 PA10 PA12  PB0 PB1 PB6 PB7 PB3 PB9 PB13 PB14 PE7 PE8 PE9 PE10 PE11
+#被玩坏的家伙 PB4(PWM) PA13(pp) PA14(pp) PB8(蜂鸣器)
+#四个舵机使用TIM3的四个通道使用引脚为PA6 PA7 PB0 PB1
 #四个步进电机使用的TIM4的定时器中断使用的引脚是PB6 PB7 PB8 PB9
 
 #通信协议：Lr 左手抓 Rr右手抓 Pr放下 Fr脱机 Gr读取rfidx信息 Br左右臂舵机回转 使用的是uart1 蓝牙引脚为PA9输出(TX) PA10输入(RX)
@@ -12,7 +13,7 @@ RGB(190,64,64), RGB(190,160,64), RGB(127,190,64), RGB(64,190,97), RGB(64,190,190
 #函数Read_flag的返回值 0为失败 1 2 3 4 5 6 7 8分别“表示红专并进历史交融”
 
 
-#电缸的前进与后退的引脚是PA0 PA1;PA4 PA5;PA6 PA7;PA8 PA11;
+#电缸的前进与后退的引脚是PA0 PA1;PA4 PA5;PA12 PA11;PB14 PB13;
 
 
 #stm与pc的通信 分为三个部分：
