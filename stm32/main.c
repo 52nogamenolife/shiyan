@@ -8,6 +8,7 @@
 #include "adapter.h"
 #include "ultrasonic.h"
 #include "switch.h"
+
 /************************************************
  ALIENTEK精英STM32开发板实验9
  PWM输出实验  
@@ -22,11 +23,11 @@
 #define dis_catch2 1850
 extern u16 motor1,motor2,motor3,motor4;//控制步进电机
 
-u8 adapter1[2]={10,255},adapter2[2]={10,255},adapter3[2]={10,255},adapter4[2]={10,255};//步进电机的转动时间
+u8 adapter1[2]={4,255},adapter2[2]={4,255},adapter3[2]={4,255},adapter4[2]={4,255};//步进电机的转动时间
 u16 mg1=1850,mg2=1850,mg3=1850,mg4=1850;//控制最上方的舵机
 u16 usart1_len,usart2_len;//串口数据长度
 
-u8 looptime=30,delaytime=30;
+u8 looptime=30,delaytime=100;
 extern u8 b_flag,s_flag;//电杠回缩,停止
 extern u8 L_flag,R_flag,P_flag,F_flag,G_flag,B_flag;//左手 右手 放下 脱机 读取rfid 左右臂舵机回转
 
@@ -42,7 +43,6 @@ void assert_failed(uint8_t* file, uint32_t line)
 
  int main(void)
  {		
-	 int temp;
 	RCC_init();
 	switch_GPIO_init();
 	 
@@ -111,9 +111,9 @@ while(1)
 
 		}
 
-		if(P_flag==1||GPIO_ReadOutputDataBit(GPIOE,GPIO_Pin_7)){//放下 第一次到达 或者开关有效
+		if(P_flag==1||GPIO_ReadInputDataBit(GPIOE,GPIO_Pin_7)){//放下 第一次到达 或者开关有效
 				int i;
-			for(i=0;i<looptime;i++){
+				for(i=0;i<looptime;i++){
 				TIM_SetCompare3(TIM3,mg3);
 				TIM_SetCompare4(TIM3,mg4);
 				delay_ms(30);
@@ -162,7 +162,6 @@ while(1)
 			int i;
 			//抓住  电缸前进后退
 			backward(1);
-			
 			for(i=0;i<adapter1[0];i++)
 			delay_ms(adapter1[1]);
 			stop();
@@ -179,8 +178,9 @@ while(1)
 			delay_ms(adapter4[1]);
 			stop();
 			F_flag=2;
+			b_flag=0;
 		}
-		if(b_flag){
+		if(b_flag==1){
 			//抓住
 			int i;
 			forward(1);
@@ -199,7 +199,8 @@ while(1)
 				for(i=0;i<adapter4[0];i++)
 			delay_ms(adapter4[1]);
 			stop();
-			b_flag=0;
+			b_flag=2;
+			F_flag=0;
 		}
 		if(s_flag){
 			stop();

@@ -1,9 +1,4 @@
 #include "ultrasonic.h"
-#include "timer.h"
-#include "led.h"
-#include "usart.h"
-#include "stm32f10x_exti.h"
-#include "delay.h"
 
 
 u16 ultrasonic1,ultrasonic2;
