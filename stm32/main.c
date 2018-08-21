@@ -23,7 +23,7 @@
 #define dis_catch2 1850
 extern u16 motor1,motor2,motor3,motor4;//控制步进电机
 
-u8 adapter1[2]={4,255},adapter2[2]={4,255},adapter3[2]={4,255},adapter4[2]={4,255};//步进电机的转动时间
+u8 adapter1[2]={1,10},adapter2[2]={1,10},adapter3[2]={1,10},adapter4[2]={1,10};//步进电机的转动时间
 u16 mg1=1850,mg2=1850,mg3=1850,mg4=1850;//控制最上方的舵机
 u16 usart1_len,usart2_len;//串口数据长度
 
@@ -86,7 +86,7 @@ while(1)
 			
 			for(i=0;i<looptime;i++){
 				TIM_SetCompare1(TIM3,mg1);
-				delay_ms(30);
+				delay_ms(40);
 				TIM_SetCompare1(TIM3,2000);
 				delay_ms(delaytime);
 			}
@@ -101,7 +101,7 @@ while(1)
 			
 			for(i=0;i<looptime;i++){
 				TIM_SetCompare2(TIM3,mg2);
-				delay_ms(30);
+				delay_ms(40);
 				TIM_SetCompare2(TIM3,2000);
 				delay_ms(delaytime);
 			}
@@ -114,9 +114,9 @@ while(1)
 		if(P_flag==1||GPIO_ReadInputDataBit(GPIOE,GPIO_Pin_7)){//放下 第一次到达 或者开关有效
 				int i;
 				for(i=0;i<looptime;i++){
-				TIM_SetCompare3(TIM3,mg3);
+				TIM_SetCompare3(TIM3,0x06f0);
 				TIM_SetCompare4(TIM3,mg4);
-				delay_ms(30);
+				delay_ms(40);
 				TIM_SetCompare3(TIM3,2000);
 				TIM_SetCompare4(TIM3,2000);
 				delay_ms(delaytime);
@@ -128,7 +128,7 @@ while(1)
 			for(i=0;i<looptime;i++){
 				TIM_SetCompare1(TIM3,mg1);
 				TIM_SetCompare2(TIM3,mg2);
-				delay_ms(30);
+				delay_ms(40);
 				TIM_SetCompare1(TIM3,2000);
 				TIM_SetCompare2(TIM3,2000);
 				delay_ms(delaytime);
@@ -147,9 +147,9 @@ while(1)
 			int i;
 			
 			for(i=0;i<looptime;i++){
-				TIM_SetCompare3(TIM3,mg3);
+				TIM_SetCompare3(TIM3,0x0790);
 				TIM_SetCompare4(TIM3,mg4);
-				delay_ms(30);
+				delay_ms(40);
 				TIM_SetCompare3(TIM3,2000);
 				TIM_SetCompare4(TIM3,2000);
 				delay_ms(delaytime);
