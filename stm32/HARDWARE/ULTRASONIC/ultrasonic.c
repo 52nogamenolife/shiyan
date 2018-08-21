@@ -120,13 +120,14 @@ void EXTI15_10_IRQHandler(void){
 	} 
 }
 
+void getultrasonic(void){
+
+}
 void trig_ultrasonic(void){
 	
 	GPIO_SetBits(GPIOE,GPIO_Pin_8);
-	delay_us(20);
-	GPIO_ResetBits(GPIOE,GPIO_Pin_8);
-	
 	GPIO_SetBits(GPIOE,GPIO_Pin_10);
 	delay_us(20);
+	GPIO_ResetBits(GPIOE,GPIO_Pin_8);
 	GPIO_ResetBits(GPIOE,GPIO_Pin_10);
 }

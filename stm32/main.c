@@ -21,10 +21,10 @@
 
 #define dis_catch1 1850
 #define dis_catch2 1850
-extern u16 motor1,motor2,motor3,motor4;//控制步进电机
-
-u8 adapter1[2]={4,255},adapter2[2]={4,255},adapter3[2]={4,255},adapter4[2]={4,255};//步进电机的转动时间
-u16 mg1=1850,mg2=1850,mg3=1850,mg4=1850;//控制最上方的舵机
+extern short motor1,motor2,motor3,motor4;//控制步进电机
+extern u8 speed1, speed2,speed3,speed4; 
+u8 adapter1[2]={28,100},adapter2[2]={26,100},adapter3[2]={1,100},adapter4[2]={1,100};//步进电机的转动时间
+u16 mg1=1808,mg2=1850,mg3=1850,mg4=1850;//控制最上方的舵机
 u16 usart1_len,usart2_len;//串口数据长度
 
 u8 looptime=30,delaytime=100;
@@ -63,7 +63,7 @@ delay_ms(255);
  	TIM3_PWM_Init(1999,719);	 //720分频。PWM频率=72000000/720/2000=50hz
 	delay_ms(255);
 		
-	TIM4_Int_Init(9999,71);	 //分频2。PWM频率=72000000/72/1000=1Khz
+	TIM4_Int_Init(498,71);	 //分频2。PWM频率=72000000/72/1000=1khz
 	delay_ms(255);
 	
 	 //超声波配置
@@ -80,13 +80,12 @@ delay_ms(255);
 	
 while(1)
 		{
-		
 		if(L_flag==1){
 			int i;
 			
 			for(i=0;i<looptime;i++){
-				TIM_SetCompare1(TIM3,mg1);
-				delay_ms(30);
+				TIM_SetCompare1(TIM3,0x06f0);
+				delay_ms(40);
 				TIM_SetCompare1(TIM3,2000);
 				delay_ms(delaytime);
 			}
@@ -97,11 +96,10 @@ while(1)
 		
 		if(R_flag==1){
 			int i;
-			TIM_SetCompare2(TIM3,1850);//右手舵机
 			
 			for(i=0;i<looptime;i++){
-				TIM_SetCompare2(TIM3,mg2);
-				delay_ms(30);
+				TIM_SetCompare2(TIM3,0x0710);
+				delay_ms(40);
 				TIM_SetCompare2(TIM3,2000);
 				delay_ms(delaytime);
 			}
@@ -114,9 +112,9 @@ while(1)
 		if(P_flag==1||GPIO_ReadInputDataBit(GPIOE,GPIO_Pin_7)){//放下 第一次到达 或者开关有效
 				int i;
 				for(i=0;i<looptime;i++){
-				TIM_SetCompare3(TIM3,mg3);
-				TIM_SetCompare4(TIM3,mg4);
-				delay_ms(30);
+				TIM_SetCompare3(TIM3,0x06f0);
+				TIM_SetCompare4(TIM3,0x06f0);
+				delay_ms(40);
 				TIM_SetCompare3(TIM3,2000);
 				TIM_SetCompare4(TIM3,2000);
 				delay_ms(delaytime);
@@ -126,9 +124,9 @@ while(1)
 			R_flag=0;
 			
 			for(i=0;i<looptime;i++){
-				TIM_SetCompare1(TIM3,mg1);
-				TIM_SetCompare2(TIM3,mg2);
-				delay_ms(30);
+				TIM_SetCompare1(TIM3,0x073a);
+				TIM_SetCompare2(TIM3,0x780);
+				delay_ms(40);
 				TIM_SetCompare1(TIM3,2000);
 				TIM_SetCompare2(TIM3,2000);
 				delay_ms(delaytime);
@@ -147,9 +145,9 @@ while(1)
 			int i;
 			
 			for(i=0;i<looptime;i++){
-				TIM_SetCompare3(TIM3,mg3);
-				TIM_SetCompare4(TIM3,mg4);
-				delay_ms(30);
+				TIM_SetCompare3(TIM3,0x0790);
+				TIM_SetCompare4(TIM3,0x0790);
+				delay_ms(40);
 				TIM_SetCompare3(TIM3,2000);
 				TIM_SetCompare4(TIM3,2000);
 				delay_ms(delaytime);
@@ -204,12 +202,30 @@ while(1)
 		}
 		if(s_flag){
 			stop();
+			F_flag=0;
+			b_flag=0;
 			s_flag=0;
 				}
 		if(ultrasonic1>=7100||ultrasonic2>=7100){
 			F_flag=3;
 		}
-		
+		if(F_flag==2){//脱机上升
+				motor1=400;
+				motor2=400;
+				motor3=400;
+				motor4=400;
+				ultrasonic1=0;
+				ultrasonic2=0;
+				trig_ultrasonic();
+				getultrasonic();
+		}
+			else if(F_flag==3) {//缓慢上升
+				speed1=120;
+				speed2=120;
+				speed3=120;
+				speed4=120;
+			}
+				
 	}
 	
  }

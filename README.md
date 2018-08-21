@@ -1,8 +1,8 @@
 # RoboGame
-已经使用的io口：PA2 PA3 PA0 PA1;PA4 PA5 PA6 PA7;PA14 PA11 PA9 PA10 PA12  PB0 PB1 PB6 PB7 PB3 PB9 PB13 PB14 PE7 PE8 PE9 PE10 PE11
+已经使用的io口：PA2 PA3 PA0 PA1;PA4 PA5 PA6 PA7;PA14 PA11 PA9 PA10 PA12  PB0 PB1 PB5 PB6 PB7 PB3 PB9 PB13 PB14 PE7 PE8 PE9 PE10 PE11
 #被玩坏的家伙 PB4(PWM) PA13(pp) PA14(pp) PB8(蜂鸣器)
 #四个舵机使用TIM3的四个通道使用引脚为PA6 PA7 PB0 PB1
-#四个步进电机使用的TIM4的定时器中断使用的引脚是PB6 PB7 PB8 PB9
+#四个步进电机使用的TIM4的定时器中断使用的引脚是PB6 PB7 PB5 PB9
 
 #通信协议：Lr 左手抓 Rr右手抓 Pr放下 Fr脱机 Gr读取rfidx信息 Br左右臂舵机回转 使用的是uart1 蓝牙引脚为PA9输出(TX) PA10输入(RX)
 
@@ -31,4 +31,21 @@ RGB(190,64,64), RGB(190,160,64), RGB(127,190,64), RGB(64,190,97), RGB(64,190,190
 
 #开关触发 PE7被置高
 
+#右边 1B红 1A蓝 2A黑 2B绿   左边 1B蓝 1A红 2A黑 2B绿 
+左上 0f
+舵机参数
+（56）舵机 04 “倒L 锐角84”06D0	 "L锐角84"  07a0
+
+（12）舵机 03   “到L 90” 06E0         'L90'07a0
+
+（12）舵机 01    夹紧06F0   全松073a
+
+（）舵机 02        加紧0710  全松0780
+
+
+
+电钢（78 ）抓1A+ 松1A-
+
+
+电钢（78 ）抓1D+ 松1D-
 

@@ -25,7 +25,7 @@
 //psc：时钟预分频数
 //这里使用的是定时器3!
 
-u16 motor1=0,motor2=0,motor3=0,motor4=0;//控制步进电
+short motor1=0,motor2=0,motor3=0,motor4=0;//控制步进电
 u8 speed1=2,speed2=2,speed3=2,speed4=2; 
 extern u8 looptime,delaytime;
 u8 speed1flag,speed2flag,speed3flag,speed4flag; 
@@ -33,9 +33,9 @@ extern u16 mg1,mg2,mg3,mg4;//控制最上方的舵机
 extern u8 adapter1[2],adapter2[2],adapter3[2],adapter4[2];//步进电机的转动时间
 u16 num;
 u8 flag;
-u8 L_flag=0,R_flag=0,P_flag=0,F_flag=0,G_flag=0,B_flag=0;//左手 右手 放下 脱机 读取rfid 左右臂舵机回转
+u8 L_flag=0,R_flag=0,P_flag=0,F_flag,G_flag=0,B_flag=0;//左手 右手 放下 脱机 读取rfid 左右臂舵机回转
 extern u16 usart1_len,usart2_len;//串口数据长度
-u8 b_flag=1,s_flag=1;
+u8 b_flag=0,s_flag=0;
 char information_all[50];
 extern u16 ultrasonic1,ultrasonic2;//超声波返回的定时器计数值
 void Usart_SendString(USART_TypeDef* USARTx,char *str){
@@ -80,29 +80,36 @@ void TIM4_IRQHandler(void)   //TIM4中断 步进电机的PWM
 		speed1flag++;speed2flag++;speed3flag++;speed4flag++;
 		if(speed1flag>=speed1){
 				speed1flag=0;	
-		if(motor1){
+		if(motor1>0){
 			if(GPIO_ReadOutputDataBit(GPIOB,GPIO_Pin_6)){
 				GPIO_ResetBits(GPIOB,GPIO_Pin_6);
-				motor1--;}
+				motor1--;
+			}
 			else {
-				GPIO_SetBits(GPIOB,GPIO_Pin_6);}}
+				GPIO_SetBits(GPIOB,GPIO_Pin_6);
+		}
+		
+		}
 	
 		}
 		if(speed2flag>=speed2){
 			speed2flag=0;
-		if(motor2){
+		if(motor2>0){
 			if(GPIO_ReadOutputDataBit(GPIOB,GPIO_Pin_7)){
 				
 				GPIO_ResetBits(GPIOB,GPIO_Pin_7);
 				motor2--;
+					
 			}
 			else {
 			GPIO_SetBits(GPIOB,GPIO_Pin_7);
-			}}
+			}
+		}
+	
 		}
 		if(speed3flag>=speed3){
 				speed3flag=0;
-			if(motor3){
+			if(motor3>0){
 				if(GPIO_ReadOutputDataBit(GPIOB,GPIO_Pin_5)){
 					GPIO_ResetBits(GPIOB,GPIO_Pin_5);
 					motor3--;
@@ -111,10 +118,11 @@ void TIM4_IRQHandler(void)   //TIM4中断 步进电机的PWM
 				GPIO_SetBits(GPIOB,GPIO_Pin_5);
 			}
 		}
+			
 		}
 	if(speed4flag>=speed4){
 				speed4flag=0;
-		if(motor4){
+		if(motor4>0){
 			if(GPIO_ReadOutputDataBit(GPIOB,GPIO_Pin_9)){
 				
 				GPIO_ResetBits(GPIOB,GPIO_Pin_9);
@@ -125,6 +133,7 @@ void TIM4_IRQHandler(void)   //TIM4中断 步进电机的PWM
 			
 			}
 		}
+		
 		}
 	}
 }
@@ -291,10 +300,10 @@ void get_motor(void)
 
 				case 'a': //ask 询问所有信息
 				
-				sprintf(information_all,"motor %d %d %d %d \r\n speed %d %d %d %d \r\n diangang %d %d %d %d %d %d %d %d \r\n mg %d %d %d %d\r\n mgyanshi looptime%d  delaytime%d\n ",motor1,motor2,motor3,motor4,
+				sprintf(information_all,"motor %d %d %d %d \r\n speed %d %d %d %d \r\n diangang %d %d %d %d %d %d %d %d \r\n mg %d %d %d %d\r\n mgyanshi looptime%d  delaytime%d\n F_flag=%d\n b_flag=%d\n",motor1,motor2,motor3,motor4,
 					speed1,speed2,speed3,speed4,
 					adapter1[0],adapter1[1],adapter2[0],adapter2[1],adapter3[0],adapter3[1],adapter4[0],adapter4[1]
-					,mg1,mg2,mg3,mg4,looptime,delaytime);
+					,mg1,mg2,mg3,mg4,looptime,delaytime,F_flag,b_flag);
 				Usart_SendString(USART1,information_all);
 					break;
 				
@@ -374,6 +383,24 @@ void get_motor(void)
 							default:
 							break;
 					}
+						case 'c':
+							if(USART1_RX_BUF[1]=='l'&&USART1_RX_BUF[2]=='c'){
+							F_flag=0;
+							L_flag=0;
+							R_flag=0;
+							B_flag=0;
+							b_flag=0;
+							P_flag=0;
+							G_flag=0;
+							s_flag=0;
+							USART_SendData(USART1, 'c');
+								while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+								USART_SendData(USART1, 'l');
+								while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+								USART_SendData(USART1, 'c');
+								while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+							}
+							break;
 						case 'g': //设置步进电机目标行程和速度
 					switch(USART1_RX_BUF[1]){
 						case 1:
@@ -445,22 +472,7 @@ void get_motor(void)
 			USART1_RX_STA=0;
 					
 			
-			if(F_flag==2){//脱机上升
-				motor1=1000;
-				motor2=1000;
-				motor3=1000;
-				motor4=1000;
-				ultrasonic1=0;
-				ultrasonic2=0;
-				trig_ultrasonic();
-		}
-			else if(F_flag==3) {//缓慢上升
-				speed1=120;
-				speed2=120;
-				speed3=120;
-				speed4=120;
-			}
-				
+			
 	}
 }
 void RCC_init(void){
