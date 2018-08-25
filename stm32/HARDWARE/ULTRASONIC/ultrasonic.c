@@ -3,24 +3,24 @@
 
 u16 ultrasonic1,ultrasonic2;
 
-void TIM1_Configuration(short arr,short psc){
+void TIM5_Configuration(u16 arr,u16 psc){
 	
 TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
 
 
 TIM_TimeBaseStructure.TIM_Prescaler = psc; //72M/72=1M 
 TIM_TimeBaseStructure.TIM_Period = arr; //20ms overflow
-TIM_TimeBaseStructure.TIM_ClockDivision = 0x0; //
+TIM_TimeBaseStructure.TIM_ClockDivision = TIM_CKD_DIV1; //
 TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up; //
-TIM_TimeBaseInit(TIM1, &TIM_TimeBaseStructure); 
+TIM_TimeBaseInit(TIM5, &TIM_TimeBaseStructure); 
 /*load */
-TIM_ARRPreloadConfig(TIM1, ENABLE);
+//TIM_ARRPreloadConfig(TIM1, ENABLE);
 //clear IT bit
-TIM_ClearITPendingBit(TIM1,TIM_IT_Update); 
+//TIM_ClearITPendingBit(TIM1,TIM_IT_Update); 
 /* overflow interrupt*/
-//TIM_ITConfig(TIM3, TIM_IT_Update, ENABLE);
+//TIM_ITConfig(TIM1, TIM_IT_Update, ENABLE);
 /* allow*/
-TIM_Cmd(TIM1, ENABLE);
+TIM_Cmd(TIM5, ENABLE);
 	
 }
 
@@ -86,12 +86,12 @@ void EXTI9_5_IRQHandler(void){
 	//Delay(1);
 
 	if(!(GPIOE->IDR & GPIO_Pin_9)&&ultrasonic1){	// PE6=0 falling 
-	ultrasonic1=TIM_GetCounter(TIM1)-ultrasonic1;
+	ultrasonic1=TIM_GetCounter(TIM5)-ultrasonic1;
 	if(ultrasonic1<=0)
 		ultrasonic1+=20000;
 	}
 	else{ //Rising
- ultrasonic1=TIM_GetCounter(TIM1);
+ ultrasonic1=TIM_GetCounter(TIM5);
 	}
 	
 	
@@ -108,12 +108,12 @@ void EXTI15_10_IRQHandler(void){
 	//Delay(1);
 
 	if(!(GPIOE->IDR & GPIO_Pin_11)&&ultrasonic2){	// PE6=0 falling 
-	ultrasonic2=TIM_GetCounter(TIM1)-ultrasonic2;
+	ultrasonic2=TIM_GetCounter(TIM5)-ultrasonic2;
 		if(ultrasonic2<=0)
 		ultrasonic2+=20000;
 	}
 	else{ //Rising
- ultrasonic2=TIM_GetCounter(TIM1);
+ ultrasonic2=TIM_GetCounter(TIM5);
 	}
 	
 	
@@ -130,4 +130,5 @@ void trig_ultrasonic(void){
 	delay_us(20);
 	GPIO_ResetBits(GPIOE,GPIO_Pin_8);
 	GPIO_ResetBits(GPIOE,GPIO_Pin_10);
+	delay_us(20);
 }

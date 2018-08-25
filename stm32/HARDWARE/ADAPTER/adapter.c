@@ -10,8 +10,8 @@ void stop(void)
 	GPIO_ResetBits(GPIOA,GPIO_Pin_5);
 	GPIO_ResetBits(GPIOA,GPIO_Pin_11);
 	GPIO_ResetBits(GPIOA,GPIO_Pin_12);
-	GPIO_ResetBits(GPIOB,GPIO_Pin_13);
-	GPIO_ResetBits(GPIOB,GPIO_Pin_14);
+	GPIO_ResetBits(GPIOE,GPIO_Pin_13);
+	GPIO_ResetBits(GPIOE,GPIO_Pin_14);
 
 }
 void forward(int n){
@@ -29,8 +29,8 @@ void forward(int n){
 			GPIO_ResetBits(GPIOA,GPIO_Pin_12);
 			break;
 		case 4:
-			GPIO_SetBits(GPIOB,GPIO_Pin_13);
-			GPIO_ResetBits(GPIOB,GPIO_Pin_14);
+			GPIO_SetBits(GPIOE,GPIO_Pin_13);
+			GPIO_ResetBits(GPIOE,GPIO_Pin_14);
 			break;
 		default:
 			break;
@@ -53,8 +53,8 @@ void backward(int n){
 			GPIO_SetBits(GPIOA,GPIO_Pin_12);
 			break;
 		case 4:
-			GPIO_ResetBits(GPIOB,GPIO_Pin_13);
-			GPIO_SetBits(GPIOB,GPIO_Pin_14);
+			GPIO_ResetBits(GPIOE,GPIO_Pin_13);
+			GPIO_SetBits(GPIOE,GPIO_Pin_14);
 			break;
 		default:
 			break;

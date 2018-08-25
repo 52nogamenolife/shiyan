@@ -8,7 +8,9 @@
 #include "adapter.h"
 #include "ultrasonic.h"
 #include "switch.h"
-
+#include "MG.h"
+#include "spi.h"
+#include "motor.h"
 /************************************************
  ALIENTEK精英STM32开发板实验9
  PWM输出实验  
@@ -21,18 +23,18 @@
 
 #define dis_catch1 1850
 #define dis_catch2 1850
-extern short motor1,motor2,motor3,motor4;//控制步进电机
-extern u8 speed1, speed2,speed3,speed4; 
-u8 adapter1[2]={28,100},adapter2[2]={26,100},adapter3[2]={1,100},adapter4[2]={1,100};//步进电机的转动时间
-u16 mg1=1808,mg2=1850,mg3=1850,mg4=1850;//控制最上方的舵机
-u16 usart1_len,usart2_len;//串口数据长度
 
+extern u16 motor1,motor2,motor3,motor4;//控制步进电机
+extern u8 speed1, speed2,speed3,speed4; 
+u8 adapter1[2]={0,100},adapter2[2]={0,100},adapter3[2]={27,100},adapter4[2]={27,100};//步进电机的转动时间
+u16 mg1=1850,mg2=0x0780,mg3=1850,mg4=1850;//控制最上方的舵机
+u16 usart1_len,usart2_len;//串口数据长度
 u8 looptime=30,delaytime=100;
 extern u8 b_flag,s_flag;//电杠回缩,停止
 extern u8 L_flag,R_flag,P_flag,F_flag,G_flag,B_flag;//左手 右手 放下 脱机 读取rfid 左右臂舵机回转
 
 extern u16 ultrasonic1,ultrasonic2;//超声波返回的定时器计数值
-
+extern u8 RFID_BUFFER[3];//rfid的读出的数据
 
 void assert_failed(uint8_t* file, uint32_t line)
 {
@@ -40,14 +42,27 @@ void assert_failed(uint8_t* file, uint32_t line)
  while(1);
 }
 
+void test_init(void){
+	GPIO_InitTypeDef GPIO_InitStructure;
 
+	RCC_APB2PeriphClockCmd(	RCC_APB2Periph_GPIOB, ENABLE );//PORTBÊ±ÖÓÊ¹ÄÜ 
+	
+	
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_12|GPIO_Pin_13  | GPIO_Pin_15;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;  //PB13/14/15¸´ÓÃÍÆÍìÊä³ö 
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_Init(GPIOB, &GPIO_InitStructure);//³õÊ¼»¯GPIOB
+	
+}
  int main(void)
  {		
-	RCC_init();
+ 	 delay_init();	    	 //延时函数初始化	
+
+	 RCC_init();
 	switch_GPIO_init();
 	 
 	//KEY_Init(); //初始化与案件链接的硬件接口
-	delay_init();	    	 //延时函数初始化	 
+	 
 	delay_ms(255);
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2); 	 //设置NVIC中断分组2:2位抢占优先级，2位响应优先级
 	 
@@ -67,21 +82,45 @@ delay_ms(255);
 	delay_ms(255);
 	
 	 //超声波配置
-	TIM1_Configuration(19999,71);
+	TIM5_Configuration(19999,71);
 delay_ms(255);
 
 	ultrasonic_GPIO_init();
 	delay_ms(255);
 	
+	//RFID_SPI2_Init();
+	//RFID_SPI1_Init();//会用到舵机的PA6 与	PA7
+	
 	ultrasonic_IRQ_init();
-	GPIO_SetBits(GPIOB,GPIO_Pin_5);
-	GPIO_ResetBits(GPIOE,GPIO_Pin_5);
 	 delay_ms(255);
+	 
+	 //test_init();
+	 motor_init();
+	 UP();
+	 DIS_motor();
+	 TIM_SetCompare1(TIM3,mg1);
+	TIM_SetCompare2(TIM3,mg2);
+	TIM_SetCompare3(TIM3,mg3);
+	TIM_SetCompare4(TIM3,mg4);
 	
 while(1)
 		{
+			
+			while(1){
+			//PBout(12)=1;
+				//GPIO_ResetBits(GPIOB,GPIO_Pin_12);
+				//delay_ms(1000);
+			//SPI_I2S_SendData(SPI2, 0x35); //Í¨¹ýÍâÉèSPIx·¢ËÍÒ»¸öÊý¾Ý
+		//PBout(12)=0;
+				//GPIO_SetBits(GPIOB,GPIO_Pin_12);
+				//delay_ms(1000);
+				//DOWN();
+	 //EN_motor();
+			}
+			
 		if(L_flag==1){
-			int i;
+			L_flag=2;;
+			/*int i;
 			
 			for(i=0;i<looptime;i++){
 				TIM_SetCompare1(TIM3,0x06f0);
@@ -89,13 +128,17 @@ while(1)
 				TIM_SetCompare1(TIM3,2000);
 				delay_ms(delaytime);
 			}
+			*/
+			move_mg1(mg1,0x06f0);
+			mg1=0x06f0;
 			
-      L_flag=2;
+      
 
 		}
 		
 		if(R_flag==1){
-			int i;
+			R_flag=2;
+			/*int i;
 			
 			for(i=0;i<looptime;i++){
 				TIM_SetCompare2(TIM3,0x0710);
@@ -103,26 +146,47 @@ while(1)
 				TIM_SetCompare2(TIM3,2000);
 				delay_ms(delaytime);
 			}
+			*/
+			move_mg2(mg2,0x0715);
+			mg2=0x0715;
 			
-		R_flag=2;
+		
 		
 
 		}
 
-		if(P_flag==1||GPIO_ReadInputDataBit(GPIOE,GPIO_Pin_7)){//放下 第一次到达 或者开关有效
-				int i;
+		if(P_flag==1){//放下 第一次到达 或者开关有效
+			P_flag=2;//我方好了！
+			L_flag=0;
+			R_flag=0;
+			USART_SendData(USART1, 'P');
+						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+			USART_SendData(USART1, '\n');
+			
+						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+			USART_SendData(USART1, 0x0d0a);
+							while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+			/*
 				for(i=0;i<looptime;i++){
 				TIM_SetCompare3(TIM3,0x06f0);
 				TIM_SetCompare4(TIM3,0x06f0);
 				delay_ms(40);
-				TIM_SetCompare3(TIM3,2000);
+				
+					TIM_SetCompare3(TIM3,2000);
 				TIM_SetCompare4(TIM3,2000);
 				delay_ms(delaytime);
+					
 			}
-	
-			L_flag=0;
-			R_flag=0;
+				*/
+			move_mg3(mg3,0x06f0);
+			mg3=0x06f0;
+			move_mg4(mg4,0x06f0);
+			mg4=0x06f0;
+			delay_ms(500);
+			delay_ms(500);
 			
+			
+			/*
 			for(i=0;i<looptime;i++){
 				TIM_SetCompare1(TIM3,0x073a);
 				TIM_SetCompare2(TIM3,0x780);
@@ -131,18 +195,79 @@ while(1)
 				TIM_SetCompare2(TIM3,2000);
 				delay_ms(delaytime);
 			}
+			*/
+			move_mg1(mg1,0x073a);
+			mg1=0x073a;
+			move_mg2(mg2,0x780);
+			mg2=0x780;
 			
-				P_flag=2;//我方好了！
+			
 		}	
+		if(GPIO_ReadInputDataBit(GPIOE,GPIO_Pin_7)){
+			stop_motor();
+		L_flag=0;
+			R_flag=0;
+			USART_SendData(USART1, 'P');
+						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+			USART_SendData(USART1, '\n');
+			
+						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+			USART_SendData(USART1, 0x0d0a);
+							while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+			/*
+				for(i=0;i<looptime;i++){
+				TIM_SetCompare3(TIM3,0x06f0);
+				TIM_SetCompare4(TIM3,0x06f0);
+				delay_ms(40);
+				
+					TIM_SetCompare3(TIM3,2000);
+				TIM_SetCompare4(TIM3,2000);
+				delay_ms(delaytime);
+					
+			}
+				*/
+			move_mg3(mg3,0x06f0);
+			mg3=0x06f0;
+			move_mg4(mg4,0x06f0);
+			mg4=0x06f0;
+			delay_ms(500);
+			delay_ms(500);
+			
+			
+			/*
+			for(i=0;i<looptime;i++){
+				TIM_SetCompare1(TIM3,0x073a);
+				TIM_SetCompare2(TIM3,0x780);
+				delay_ms(40);
+				TIM_SetCompare1(TIM3,2000);
+				TIM_SetCompare2(TIM3,2000);
+				delay_ms(delaytime);
+			}
+			*/
+			move_mg1(mg1,0x073a);
+			mg1=0x073a;
+			move_mg2(mg2,0x780);
+			mg2=0x780;
+			
+			DOWN();
 		
-		if(G_flag){
-		u16 t;
-		t=Read_flag();//读取旗子信息
-		G_flag=0;
-		USART_SendData(USART1,t);
 		}
+		if(G_flag){
+			u16 t;
+			#if USART
+				t=Read_flag();//读取旗子信息
+			#endif
+				
+			#if SPI
+				RFID_SPI_READ();
+				t=RFID_BUFFER[0]*256+RFID_BUFFER[1];//！！！！！！！！！！！！！！！！！！！！！！！！可能会反向！！！！！！！！！！！！！！！！
+				//t=RFID_BUFFER[0]+RFID_BUFFER[1]*256;
+			#endif
+			USART_SendData(USART1,t);
+		}
+		
 		if(B_flag==1){//到达拐角点 下面发送信号转会左右臂舵机
-			int i;
+			/*int i;
 			
 			for(i=0;i<looptime;i++){
 				TIM_SetCompare3(TIM3,0x0790);
@@ -152,12 +277,19 @@ while(1)
 				TIM_SetCompare4(TIM3,2000);
 				delay_ms(delaytime);
 			}
+			*/
+			move_mg3(mg3,0x0790);
+			mg3=0x0790;
+			move_mg4(mg4,0x0790);
+			mg4=0x0790;
 			
 		B_flag=2;
 		}
 		
 		if(F_flag==1){
-			int i;
+			int i;	
+			F_flag=2;
+			b_flag=0;
 			//抓住  电缸前进后退
 			backward(1);
 			for(i=0;i<adapter1[0];i++)
@@ -175,12 +307,13 @@ while(1)
 			for(i=0;i<adapter4[0];i++)
 			delay_ms(adapter4[1]);
 			stop();
-			F_flag=2;
-			b_flag=0;
+		
 		}
 		if(b_flag==1){
 			//抓住
 			int i;
+			b_flag=2;
+			F_flag=0;
 			forward(1);
 			for(i=0;i<adapter1[0];i++)
 			delay_ms(adapter1[1]);
@@ -197,35 +330,36 @@ while(1)
 				for(i=0;i<adapter4[0];i++)
 			delay_ms(adapter4[1]);
 			stop();
-			b_flag=2;
-			F_flag=0;
+			
 		}
 		if(s_flag){
-			stop();
 			F_flag=0;
 			b_flag=0;
 			s_flag=0;
+			stop();
 				}
 		if(ultrasonic1>=7100||ultrasonic2>=7100){
 			F_flag=3;
 		}
 		if(F_flag==2){//脱机上升
-				motor1=400;
-				motor2=400;
-				motor3=400;
-				motor4=400;
+				EN_motor();
+				motor1=4000;
+				motor2=4000;
+				motor3=4000;
+				motor4=4000;
 				ultrasonic1=0;
 				ultrasonic2=0;
 				trig_ultrasonic();
 				getultrasonic();
 		}
-			else if(F_flag==3) {//缓慢上升
+			if(F_flag==3) {//缓慢上升
 				speed1=120;
 				speed2=120;
 				speed3=120;
 				speed4=120;
-			}
 				
+			}
+			
 	}
 	
  }

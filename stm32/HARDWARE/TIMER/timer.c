@@ -25,7 +25,7 @@
 //psc：时钟预分频数
 //这里使用的是定时器3!
 
-short motor1=0,motor2=0,motor3=0,motor4=0;//控制步进电
+u16 motor1=0,motor2=0,motor3=0,motor4=0;//控制步进电
 u8 speed1=2,speed2=2,speed3=2,speed4=2; 
 extern u8 looptime,delaytime;
 u8 speed1flag,speed2flag,speed3flag,speed4flag; 
@@ -243,6 +243,8 @@ void get_motor(void)
 						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 						USART_SendData(USART1, 'r');
 						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+						USART_SendData(USART1, 0x0d0a);
+						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 						USART1_RX_STA=0;
 						}
 					}
@@ -256,6 +258,8 @@ void get_motor(void)
 						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 						USART_SendData(USART1, 'r');
 						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+						USART_SendData(USART1, 0x0d0a);
+						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 						USART1_RX_STA=0;
 						}
 					}
@@ -268,6 +272,8 @@ void get_motor(void)
 						USART_SendData(USART1, 'P');
 						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 						USART_SendData(USART1, 'r');
+						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+						USART_SendData(USART1, 0x0d0a);
 						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 						USART1_RX_STA=0;
 						}
@@ -293,6 +299,8 @@ void get_motor(void)
 						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 						USART_SendData(USART1, 'r');
 						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+						USART_SendData(USART1, 0x0d0a);
+						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 						USART1_RX_STA=0;
 						}
 					}
@@ -305,6 +313,8 @@ void get_motor(void)
 					adapter1[0],adapter1[1],adapter2[0],adapter2[1],adapter3[0],adapter3[1],adapter4[0],adapter4[1]
 					,mg1,mg2,mg3,mg4,looptime,delaytime,F_flag,b_flag);
 				Usart_SendString(USART1,information_all);
+				USART_SendData(USART1, 0x0d0a);
+				while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 					break;
 				
 				case 'b': //爬杆臂松手
@@ -312,6 +322,8 @@ void get_motor(void)
 						if(b_flag==0)b_flag=1;
 						while(USART1_RX_STA&0x8000&&USART1_RX_BUF[0]=='b'&&USART1_RX_BUF[1]=='q'){		
 							USART_SendData(USART1, 'h');
+							while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+							USART_SendData(USART1, 0x0d0a);
 							while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 							USART1_RX_STA=0;
 						}
@@ -328,6 +340,8 @@ void get_motor(void)
 						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 						USART_SendData(USART1, 'r');
 						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成		
+						USART_SendData(USART1, 0x0d0a);
+						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 						USART1_RX_STA=0;
 						}
 					}
@@ -337,6 +351,8 @@ void get_motor(void)
 						s_flag=1;
 						while(USART1_RX_STA&0x8000&&USART1_RX_BUF[0]=='s'){		
 						USART_SendData(USART1, 's');
+						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+						USART_SendData(USART1, 0x0d0a);
 						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 						USART1_RX_STA=0;
 						}
@@ -352,6 +368,8 @@ void get_motor(void)
 							speed1flag=0;
 							USART_SendData(USART1, 'T');
 							while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+							USART_SendData(USART1, 0x0d0a);
+							while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 							break;
 						case 2:
 							motor2=USART1_RX_BUF[2];
@@ -361,7 +379,9 @@ void get_motor(void)
 							speed2flag=0;
 							USART_SendData(USART1, 'T');
 							while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
-							break;
+							USART_SendData(USART1, 0x0d0a);
+							while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成	
+						break;
 						case 3:
 							motor3=USART1_RX_BUF[2];
 							motor3*=256;
@@ -370,7 +390,8 @@ void get_motor(void)
 							speed2flag=0;
 							USART_SendData(USART1, 'T');
 							while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
-							break;
+							USART_SendData(USART1, 0x0d0a);
+							while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成break;
 						case 4:
 							motor4=USART1_RX_BUF[2];
 							motor4*=256;
@@ -378,6 +399,8 @@ void get_motor(void)
 							speed4=USART1_RX_BUF[4];	
 							speed2flag=0;
 							USART_SendData(USART1, 'T');
+							while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+							USART_SendData(USART1, 0x0d0a);
 							while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 							break;
 							default:
@@ -399,6 +422,30 @@ void get_motor(void)
 								while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 								USART_SendData(USART1, 'c');
 								while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+								USART_SendData(USART1, 0x0d0a);
+								while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+							}
+							break;
+						case 'v':
+							USART_SendData(USART1, 'v');
+							while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+							USART_SendData(USART1, 0x0d0a);
+							while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+							switch(USART1_RX_BUF[1]){
+								case 1:
+									speed1=USART1_RX_BUF[2];
+									break;
+								case 2:
+									speed2=USART1_RX_BUF[2];
+									break;
+								case 3:
+									speed3=USART1_RX_BUF[2];
+									break;
+								case 4:
+									speed4=USART1_RX_BUF[2];
+									break;
+								default:
+									break;
 							}
 							break;
 						case 'g': //设置步进电机目标行程和速度
@@ -408,6 +455,8 @@ void get_motor(void)
 							mg1*=256;
 							mg1+=USART1_RX_BUF[3];
 							USART_SendData(USART1, 'T');
+							while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+							USART_SendData(USART1, 0x0d0a);
 							while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 							break;
 						
@@ -424,12 +473,16 @@ void get_motor(void)
 							mg3+=USART1_RX_BUF[3];
 							USART_SendData(USART1, 'T');
 							while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+							USART_SendData(USART1, 0x0d0a);
+							while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 							break;
 						case 4:
 							mg4=USART1_RX_BUF[2];
 							mg4*=256;
 							mg4+=USART1_RX_BUF[3];
 							USART_SendData(USART1, 'T');
+							while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+							USART_SendData(USART1, 0x0d0a);
 							while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 							break;
 						default:
@@ -465,6 +518,8 @@ void get_motor(void)
 			while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 			USART_SendData(USART1, 'K');
 			while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+			USART_SendData(USART1, 0x0d0a);
+			while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 					break;
 					default:
 						break;
@@ -476,7 +531,7 @@ void get_motor(void)
 	}
 }
 void RCC_init(void){
-		RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3|RCC_APB1Periph_TIM4|RCC_APB2Periph_TIM1, ENABLE);	//使能定时器3 4时钟
+		RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3|RCC_APB1Periph_TIM4|RCC_APB1Periph_TIM5, ENABLE);	//使能定时器3 4时钟
 	
  	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB  | RCC_APB2Periph_AFIO, ENABLE);  //使能GPIO外设和AFIO复用功能模块时钟
 	
