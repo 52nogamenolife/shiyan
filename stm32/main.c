@@ -72,12 +72,18 @@ void test_init(void){
  	uart2_init(9600);	 //串口初始化为115200 负责读取rfid
 delay_ms(255);
 	
-	LED_Init();			     //LED端口初始化
+	MG_GPIO_Init();			     //LED端口初始化
 delay_ms(255);
 	
  	TIM3_PWM_Init(1999,719);	 //720分频。PWM频率=72000000/720/2000=50hz
 	delay_ms(255);
-		
+	
+	 motor_init();
+	 delay_ms(255);
+	 
+	 adapter_GPIO_init();
+	 delay_ms(255);
+	 
 	TIM4_Int_Init(498,71);	 //分频2。PWM频率=72000000/72/1000=1khz
 	delay_ms(255);
 	
@@ -95,7 +101,7 @@ delay_ms(255);
 	 delay_ms(255);
 	 
 	 //test_init();
-	 motor_init();
+	
 	 UP();
 	 DIS_motor();
 	 TIM_SetCompare1(TIM3,mg1);
@@ -106,7 +112,7 @@ delay_ms(255);
 while(1)
 		{
 			
-			while(1){
+			while(0){
 			//PBout(12)=1;
 				//GPIO_ResetBits(GPIOB,GPIO_Pin_12);
 				//delay_ms(1000);
