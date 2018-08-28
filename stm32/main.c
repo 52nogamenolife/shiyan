@@ -32,7 +32,6 @@ u16 usart1_len,usart2_len;//串口数据长度
 u8 looptime=30,delaytime=100;
 extern u8 b_flag,s_flag;//电杠回缩,停止
 extern u8 L_flag,R_flag,P_flag,F_flag,G_flag,B_flag;//左手 右手 放下 脱机 读取rfid 左右臂舵机回转
-u8 Test=0;
 extern u16 ultrasonic1;//超声波返回的定时器计数值
 extern u8 RFID_BUFFER[3];//rfid的读出的数据
 

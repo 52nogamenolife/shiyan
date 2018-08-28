@@ -233,7 +233,8 @@ void get_motor(void)
 			
 			switch (USART1_RX_BUF[0]) {
 				case 'u':
-					
+					USART_SendData(USART1,'u');
+						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 					USART_SendData(USART1, 0x0d0a);
 						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 				trig_ultrasonic();
@@ -327,9 +328,11 @@ void get_motor(void)
 					if(USART1_RX_BUF[1]=='q'){
 						if(b_flag==0)b_flag=1;
 						while(USART1_RX_STA&0x8000&&USART1_RX_BUF[0]=='b'&&USART1_RX_BUF[1]=='q'){		
-							USART_SendData(USART1, 'h');
+							USART_SendData(USART1, 'b');
 							while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
-							USART_SendData(USART1, 0x0d0a);
+							USART_SendData(USART1, 'r');
+						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+						USART_SendData(USART1, 0x0d0a);
 							while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 							USART1_RX_STA=0;
 						}
@@ -412,10 +415,6 @@ void get_motor(void)
 							default:
 							break;
 					}
-						case 'T':
-								Test=USART1_RX_BUF[1];
-						
-							break;
 						case 'c':
 							if(USART1_RX_BUF[1]=='l'&&USART1_RX_BUF[2]=='c'){
 							F_flag=0;
