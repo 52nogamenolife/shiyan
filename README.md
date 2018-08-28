@@ -1,6 +1,6 @@
 # RoboGame
 已经使用的io口：PA2 PA3 PA0 PA1;PA4 PA5 PA6 PA7;PA14 PA11 PA9 PA10 PA12  PB0 PB1 PB5 PB6 PB7 PB3 PB9 PB12 PB13 PB14 PB15 PE7 PE8 PE9 PE10 PE11 PE13 PE14
-#被玩坏的家伙 PB4(PWM) PA13(pp) PA14(pp) PB8(蜂鸣器)  PA0 PA1;PA4 PA5;
+#被玩坏的家伙 PB4(PWM) PA13(pp) PA14(pp) PB8(蜂鸣器)  PA0 PA1;PA4 PA5
 #四个舵机使用TIM3的四个通道使用引脚为PA6 PA7 PB0 PB1
 #四个步进电机使用的TIM4的定时器中断使用的引脚是PB6 PB7 PB5 PB9
 
@@ -27,7 +27,7 @@ RGB(190,64,64), RGB(190,160,64), RGB(127,190,64), RGB(64,190,97), RGB(64,190,190
 #电缸参数的调整 以及安全急停
 #电缸的前进和后退都要可控
 
-#超声波模块的引脚 一号：trig PE8 echo PE9 二号：trig PE10 echo PE11
+#超声波模块的引脚 一号：trig PE5 echo PE9  700=3cm    二号：trig PE4 echo PE11  7300 1.2m
 
 #开关触发 PE7被置高
 

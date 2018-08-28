@@ -3,6 +3,8 @@
 #include "led.h"
 #include "key.h"
 #include "spi.h"
+#include "delay.h"
+#include "usart.h"
 #if USART
 
 u8 RFID_init_data[10] = {0xAA,0xBB,0x06,0x00,0x00,0x00,0x08,0x01,0x31,0x38};

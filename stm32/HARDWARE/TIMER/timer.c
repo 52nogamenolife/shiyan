@@ -25,9 +25,9 @@
 //psc：时钟预分频数
 //这里使用的是定时器3!
 
-u16 motor1=0,motor2=0,motor3=0,motor4=0;//控制步进电
+u16 motor1=65534,motor2=0,motor3=0,motor4=0;//控制步进电
 u8 speed1=2,speed2=2,speed3=2,speed4=2; 
-extern u8 looptime,delaytime;
+extern u8 looptime,delaytime,Test;
 u8 speed1flag,speed2flag,speed3flag,speed4flag; 
 extern u16 mg1,mg2,mg3,mg4;//控制最上方的舵机
 extern u8 adapter1[2],adapter2[2],adapter3[2],adapter4[2];//步进电机的转动时间
@@ -232,6 +232,12 @@ void get_motor(void)
 			usart1_len = USART1_RX_STA&0x3fff;//得到此次接收到的数据长度	
 			
 			switch (USART1_RX_BUF[0]) {
+				case 'u':
+					
+					USART_SendData(USART1, 0x0d0a);
+						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+				trig_ultrasonic();
+					break;
 				case 'L':
 					if(USART1_RX_BUF[1]=='q'){
 						if(!L_flag)
@@ -284,6 +290,8 @@ void get_motor(void)
 						USART_SendData(USART1, 'F');
 						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 						USART_SendData(USART1, 'r');
+						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+						USART_SendData(USART1, 0x0d0a);
 						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 						USART1_RX_STA=0;
 						}
@@ -404,6 +412,10 @@ void get_motor(void)
 							default:
 							break;
 					}
+						case 'T':
+								Test=USART1_RX_BUF[1];
+						
+							break;
 						case 'c':
 							if(USART1_RX_BUF[1]=='l'&&USART1_RX_BUF[2]=='c'){
 							F_flag=0;
@@ -464,6 +476,8 @@ void get_motor(void)
 							mg2+=USART1_RX_BUF[3];
 							USART_SendData(USART1, 'T');
 							while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+						USART_SendData(USART1, 0x0d0a);
+						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 							break;
 						case 3:
 							mg3=USART1_RX_BUF[2];
