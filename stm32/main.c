@@ -23,7 +23,7 @@
 
 #define dis_catch1 1850
 #define dis_catch2 1850
-
+extern u8 RFID_init_data[10];
 extern u16 motor1,motor2,motor3,motor4;//控制步进电机
 extern u8 speed1, speed2,speed3,speed4; 
 u8 adapter1[2]={0,100},adapter2[2]={0,100},adapter3[2]={27,100},adapter4[2]={27,100};//步进电机的转动时间
@@ -32,8 +32,8 @@ u16 usart1_len,usart2_len;//串口数据长度
 u8 looptime=30,delaytime=100;
 extern u8 b_flag,s_flag;//电杠回缩,停止
 extern u8 L_flag,R_flag,P_flag,F_flag,G_flag,B_flag;//左手 右手 放下 脱机 读取rfid 左右臂舵机回转
-
-extern u16 ultrasonic1,ultrasonic2;//超声波返回的定时器计数值
+u8 Test=0;
+extern u16 ultrasonic1;//超声波返回的定时器计数值
 extern u8 RFID_BUFFER[3];//rfid的读出的数据
 
 void assert_failed(uint8_t* file, uint32_t line)
@@ -41,18 +41,14 @@ void assert_failed(uint8_t* file, uint32_t line)
  printf("Wrong parameters value: file %s on line %d\r\n", file, line);
  while(1);
 }
-
-void test_init(void){
+void test(void){
 	GPIO_InitTypeDef GPIO_InitStructure;
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_4;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP; 
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz; //50M
+	GPIO_Init(GPIOE, &GPIO_InitStructure);
 
-	RCC_APB2PeriphClockCmd(	RCC_APB2Periph_GPIOB, ENABLE );//PORTBÊ±ÖÓÊ¹ÄÜ 
-	
-	
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_12|GPIO_Pin_13  | GPIO_Pin_15;
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;  //PB13/14/15¸´ÓÃÍÆÍìÊä³ö 
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-	GPIO_Init(GPIOB, &GPIO_InitStructure);//³õÊ¼»¯GPIOB
-	
+	GPIO_ResetBits(GPIOE,GPIO_Pin_4);
 }
  int main(void)
  {		
@@ -78,7 +74,7 @@ delay_ms(255);
  	TIM3_PWM_Init(1999,719);	 //720分频。PWM频率=72000000/720/2000=50hz
 	delay_ms(255);
 	
-	 motor_init();
+	// motor_init();
 	 delay_ms(255);
 	 
 	 adapter_GPIO_init();
@@ -100,28 +96,36 @@ delay_ms(255);
 	ultrasonic_IRQ_init();
 	 delay_ms(255);
 	 
-	 //test_init();
-	
-	 UP();
-	 DIS_motor();
-	 TIM_SetCompare1(TIM3,mg1);
-	TIM_SetCompare2(TIM3,mg2);
+	// UP();
+	 //DIS_motor();
+	//TIM_SetCompare1(TIM3,mg1);
+	//TIM_SetCompare2(TIM3,mg2);
 	TIM_SetCompare3(TIM3,mg3);
 	TIM_SetCompare4(TIM3,mg4);
-	
+	//test();
 while(1)
 		{
 			
 			while(0){
+				//u16 t;
+				//t=Read_flag();//读取旗子信息
+				//trig_ultrasonic();
 			//PBout(12)=1;
-				//GPIO_ResetBits(GPIOB,GPIO_Pin_12);
+				//GPIO_ResetBits(GPIOE,GPIO_Pin_5);
 				//delay_ms(1000);
 			//SPI_I2S_SendData(SPI2, 0x35); //Í¨¹ýÍâÉèSPIx·¢ËÍÒ»¸öÊý¾Ý
-		//PBout(12)=0;
-				//GPIO_SetBits(GPIOB,GPIO_Pin_12);
+		USART_SendData(USART2, 0x1998);//Ïò´®¿Ú1·¢ËÍÊý¾Ý
+				while(USART_GetFlagStatus(USART2,USART_FLAG_TC)!=SET);//µÈ´ý·¢ËÍ½áÊø
+			USART_SendData(USART2, 0xf00f);//Ïò´®¿Ú1·¢ËÍÊý¾Ý
+			while(USART_GetFlagStatus(USART2,USART_FLAG_TC)!=SET);//µÈ´ý·¢ËÍ½áÊø
+				
+			//PBout(12)=0;
+				//GPIO_SetBits(GPIOE,GPIO_Pin_5);
 				//delay_ms(1000);
+				//delay_us(60);
 				//DOWN();
 	 //EN_motor();
+				//uart_send_mydata(RFID_init_data,10);
 			}
 			
 		if(L_flag==1){
@@ -210,7 +214,7 @@ while(1)
 			
 		}	
 		if(GPIO_ReadInputDataBit(GPIOE,GPIO_Pin_7)){
-			stop_motor();
+			//stop_motor();
 		L_flag=0;
 			R_flag=0;
 			USART_SendData(USART1, 'P');
@@ -255,10 +259,10 @@ while(1)
 			move_mg2(mg2,0x780);
 			mg2=0x780;
 			
-			DOWN();
+			//DOWN();
 		
 		}
-		if(G_flag){
+		if(G_flag==1){
 			u16 t;
 			#if USART
 				t=Read_flag();//读取旗子信息
@@ -344,27 +348,32 @@ while(1)
 			s_flag=0;
 			stop();
 				}
-		if(ultrasonic1>=7100||ultrasonic2>=7100){
-			F_flag=3;
+		if(ultrasonic1>=7200){
+			//GPIO_SetBits(GPIOE,GPIO_Pin_5);//步进电机的使能线
+			F_flag=4;
 		}
 		if(F_flag==2){//脱机上升
-				EN_motor();
+				//EN_motor();
 				motor1=4000;
 				motor2=4000;
 				motor3=4000;
 				motor4=4000;
-				ultrasonic1=0;
-				ultrasonic2=0;
-				trig_ultrasonic();
-				getultrasonic();
+				
+				F_flag=3;
 		}
-			if(F_flag==3) {//缓慢上升
+		if(F_flag==3){
+			ultrasonic1=0;
+			trig_ultrasonic();
+			getultrasonic();
+		}
+			if(F_flag==4) {//缓慢上升
 				speed1=120;
 				speed2=120;
 				speed3=120;
 				speed4=120;
 				
 			}
+			
 			
 	}
 	

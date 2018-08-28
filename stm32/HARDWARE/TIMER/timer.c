@@ -37,7 +37,7 @@ u8 L_flag=0,R_flag=0,P_flag=0,F_flag,G_flag=0,B_flag=0;//左手 右手 放下 �
 extern u16 usart1_len,usart2_len;//串口数据长度
 u8 b_flag=0,s_flag=0;
 char information_all[50];
-extern u16 ultrasonic1,ultrasonic2;//超声波返回的定时器计数值
+extern u16 ultrasonic1;//超声波返回的定时器计数值
 void Usart_SendString(USART_TypeDef* USARTx,char *str){
 	while(*str){
 		while(!USART_GetFlagStatus(USARTx,USART_FLAG_TXE));
