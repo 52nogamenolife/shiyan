@@ -149,12 +149,7 @@ void TIM3_PWM_Init(u16 arr,u16 psc)
 	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, ENABLE);	//使能定时器3 4时钟
 	
  
-   //设置该引脚为复用输出功能,输出TIM3 CH1的PWM脉冲波形	GPIOA.6
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6; //TIM_CH1
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;  //复用推挽输出
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-	GPIO_Init(GPIOA, &GPIO_InitStructure);//初始化GPIO
- 
+
    //初始化TIM3
 	TIM_TimeBaseStructure.TIM_Period = arr; //设置在下一个更新事件装入活动的自动重装载寄存器周期的值
 	TIM_TimeBaseStructure.TIM_Prescaler =psc; //设置用来作为TIMx时钟频率除数的预分频值 
@@ -170,13 +165,6 @@ void TIM3_PWM_Init(u16 arr,u16 psc)
 
 	TIM_OC1PreloadConfig(TIM3, TIM_OCPreload_Enable);  //使能TIM3在CCR1上的预装载寄存器
 	
-	
-   //设置该引脚为复用输出功能,输出TIM3 CH2的PWM脉冲波形	GPIOA.7
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_7; //TIM_CH2
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;  //复用推挽输出
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-	GPIO_Init(GPIOA, &GPIO_InitStructure);//初始化GPIO
- 
    //初始化TIM3
 	
 	//初始化TIM3 Channel2 PWM模式	 
@@ -188,11 +176,6 @@ void TIM3_PWM_Init(u16 arr,u16 psc)
 	TIM_OC2PreloadConfig(TIM3, TIM_OCPreload_Enable);  //使能TIM3在CCR2上的预装载寄存器
 	
     //设置该引脚为复用输出功能,输出TIM3 CH3的PWM脉冲波形	GPIOB.0
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0; //TIM_CH3
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;  //复用推挽输出
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-	GPIO_Init(GPIOB, &GPIO_InitStructure);//初始化GPIO
- 
    //初始化TIM3
 	
 	//初始化TIM3 Channel2 PWM模式	 
@@ -203,12 +186,6 @@ void TIM3_PWM_Init(u16 arr,u16 psc)
 
 	TIM_OC3PreloadConfig(TIM3, TIM_OCPreload_Enable);  //使能TIM3在CCR3上的预装载寄存器
 	
-	  //设置该引脚为复用输出功能,输出TIM3 CH4的PWM脉冲波形	GPIOB.1
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_1; //TIM_CH4
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;  //复用推挽输出
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-	GPIO_Init(GPIOB, &GPIO_InitStructure);//初始化GPIO
- 
    //初始化TIM3
 	
 	//初始化TIM3 Channel2 PWM模式	 
@@ -235,7 +212,9 @@ void get_motor(void)
 				case 'u':
 					USART_SendData(USART1,'u');
 						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
-					USART_SendData(USART1, 0x0d0a);
+					USART_SendData(USART1, 0x0d);
+						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+				USART_SendData(USART1, 0x0a);
 						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 				trig_ultrasonic();
 					break;
@@ -248,7 +227,9 @@ void get_motor(void)
 						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 						USART_SendData(USART1, 'r');
 						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
-						USART_SendData(USART1, 0x0d0a);
+						USART_SendData(USART1, 0x0d);
+						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+				USART_SendData(USART1, 0x0a);
 						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 						USART1_RX_STA=0;
 						}
@@ -263,7 +244,9 @@ void get_motor(void)
 						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 						USART_SendData(USART1, 'r');
 						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
-						USART_SendData(USART1, 0x0d0a);
+						USART_SendData(USART1, 0x0d);
+						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+				USART_SendData(USART1, 0x0a);
 						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 						USART1_RX_STA=0;
 						}
@@ -278,7 +261,9 @@ void get_motor(void)
 						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 						USART_SendData(USART1, 'r');
 						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
-						USART_SendData(USART1, 0x0d0a);
+						USART_SendData(USART1, 0x0d);
+						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+				USART_SendData(USART1, 0x0a);
 						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 						USART1_RX_STA=0;
 						}
@@ -292,7 +277,9 @@ void get_motor(void)
 						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 						USART_SendData(USART1, 'r');
 						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
-						USART_SendData(USART1, 0x0d0a);
+						USART_SendData(USART1, 0x0d);
+						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+				USART_SendData(USART1, 0x0a);
 						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 						USART1_RX_STA=0;
 						}
@@ -306,7 +293,9 @@ void get_motor(void)
 						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 						USART_SendData(USART1, 'r');
 						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
-						USART_SendData(USART1, 0x0d0a);
+						USART_SendData(USART1, 0x0d);
+						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+				USART_SendData(USART1, 0x0a);
 						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 						USART1_RX_STA=0;
 						}
@@ -320,8 +309,10 @@ void get_motor(void)
 					adapter1[0],adapter1[1],adapter2[0],adapter2[1],adapter3[0],adapter3[1],adapter4[0],adapter4[1]
 					,mg1,mg2,mg3,mg4,looptime,delaytime,F_flag,b_flag);
 				Usart_SendString(USART1,information_all);
-				USART_SendData(USART1, 0x0d0a);
-				while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+				USART_SendData(USART1, 0x0d);
+						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+				USART_SendData(USART1, 0x0a);
+						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 					break;
 				
 				case 'b': //爬杆臂松手
@@ -332,8 +323,10 @@ void get_motor(void)
 							while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 							USART_SendData(USART1, 'r');
 						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
-						USART_SendData(USART1, 0x0d0a);
-							while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+						USART_SendData(USART1, 0x0d);
+						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+				USART_SendData(USART1, 0x0a);
+						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 							USART1_RX_STA=0;
 						}
 					}
@@ -349,7 +342,9 @@ void get_motor(void)
 						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 						USART_SendData(USART1, 'r');
 						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成		
-						USART_SendData(USART1, 0x0d0a);
+			USART_SendData(USART1, 0x0d);
+						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+				USART_SendData(USART1, 0x0a);
 						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 						USART1_RX_STA=0;
 						}
@@ -361,7 +356,9 @@ void get_motor(void)
 						while(USART1_RX_STA&0x8000&&USART1_RX_BUF[0]=='s'){		
 						USART_SendData(USART1, 's');
 						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
-						USART_SendData(USART1, 0x0d0a);
+						USART_SendData(USART1, 0x0d);
+						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+				USART_SendData(USART1, 0x0a);
 						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 						USART1_RX_STA=0;
 						}
@@ -377,8 +374,10 @@ void get_motor(void)
 							speed1flag=0;
 							USART_SendData(USART1, 'T');
 							while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
-							USART_SendData(USART1, 0x0d0a);
-							while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+							USART_SendData(USART1, 0x0d);
+						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+				USART_SendData(USART1, 0x0a);
+						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 							break;
 						case 2:
 							motor2=USART1_RX_BUF[2];
@@ -388,8 +387,10 @@ void get_motor(void)
 							speed2flag=0;
 							USART_SendData(USART1, 'T');
 							while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
-							USART_SendData(USART1, 0x0d0a);
-							while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成	
+							USART_SendData(USART1, 0x0d);
+						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+				USART_SendData(USART1, 0x0a);
+						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 						break;
 						case 3:
 							motor3=USART1_RX_BUF[2];
@@ -399,8 +400,10 @@ void get_motor(void)
 							speed2flag=0;
 							USART_SendData(USART1, 'T');
 							while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
-							USART_SendData(USART1, 0x0d0a);
-							while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成break;
+							USART_SendData(USART1, 0x0d);
+						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+				USART_SendData(USART1, 0x0a);
+						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 						case 4:
 							motor4=USART1_RX_BUF[2];
 							motor4*=256;
@@ -431,15 +434,19 @@ void get_motor(void)
 								while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 								USART_SendData(USART1, 'c');
 								while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
-								USART_SendData(USART1, 0x0d0a);
-								while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+								USART_SendData(USART1, 0x0d);
+						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+				USART_SendData(USART1, 0x0a);
+						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 							}
 							break;
 						case 'v':
 							USART_SendData(USART1, 'v');
 							while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
-							USART_SendData(USART1, 0x0d0a);
-							while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+							USART_SendData(USART1, 0x0d);
+						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+				USART_SendData(USART1, 0x0a);
+						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 							switch(USART1_RX_BUF[1]){
 								case 1:
 									speed1=USART1_RX_BUF[2];
@@ -465,8 +472,10 @@ void get_motor(void)
 							mg1+=USART1_RX_BUF[3];
 							USART_SendData(USART1, 'T');
 							while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
-							USART_SendData(USART1, 0x0d0a);
-							while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+							USART_SendData(USART1, 0x0d);
+						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+				USART_SendData(USART1, 0x0a);
+						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 							break;
 						
 						case 2:
@@ -475,7 +484,9 @@ void get_motor(void)
 							mg2+=USART1_RX_BUF[3];
 							USART_SendData(USART1, 'T');
 							while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
-						USART_SendData(USART1, 0x0d0a);
+						USART_SendData(USART1, 0x0d);
+						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+				USART_SendData(USART1, 0x0a);
 						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 							break;
 						case 3:
@@ -484,8 +495,10 @@ void get_motor(void)
 							mg3+=USART1_RX_BUF[3];
 							USART_SendData(USART1, 'T');
 							while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
-							USART_SendData(USART1, 0x0d0a);
-							while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+							USART_SendData(USART1, 0x0d);
+						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+				USART_SendData(USART1, 0x0a);
+						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 							break;
 						case 4:
 							mg4=USART1_RX_BUF[2];
@@ -493,8 +506,10 @@ void get_motor(void)
 							mg4+=USART1_RX_BUF[3];
 							USART_SendData(USART1, 'T');
 							while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
-							USART_SendData(USART1, 0x0d0a);
-							while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+							USART_SendData(USART1, 0x0d);
+						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+				USART_SendData(USART1, 0x0a);
+						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 							break;
 						default:
 							break;
@@ -529,8 +544,10 @@ void get_motor(void)
 			while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 			USART_SendData(USART1, 'K');
 			while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
-			USART_SendData(USART1, 0x0d0a);
-			while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+			USART_SendData(USART1, 0x0d);
+						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+				USART_SendData(USART1, 0x0a);
+						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 					break;
 					default:
 						break;

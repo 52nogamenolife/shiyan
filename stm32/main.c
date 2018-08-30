@@ -11,6 +11,7 @@
 #include "MG.h"
 #include "spi.h"
 #include "motor.h"
+#include "test.h"
 /************************************************
  ALIENTEK精英STM32开发板实验9
  PWM输出实验  
@@ -20,14 +21,11 @@
  广州市星翼电子科技有限公司  
  作者：正点原子 @ALIENTEK
 ************************************************/
-
-#define dis_catch1 1850
-#define dis_catch2 1850
 extern u8 RFID_init_data[10];
 extern u16 motor1,motor2,motor3,motor4;//控制步进电机
 extern u8 speed1, speed2,speed3,speed4; 
-u8 adapter1[2]={0,100},adapter2[2]={0,100},adapter3[2]={27,100},adapter4[2]={27,100};//步进电机的转动时间
-u16 mg1=1850,mg2=0x0780,mg3=1850,mg4=1850;//控制最上方的舵机
+u8 adapter1[2]={0,100},adapter2[2]={0,100};//步进电机的转动时间
+u16 mg1=1850,mg2=0x073a,mg3=1850,mg4=1850;//控制最上方的舵机
 u16 usart1_len,usart2_len;//串口数据长度
 u8 looptime=30,delaytime=100;
 extern u8 b_flag,s_flag;//电杠回缩,停止
@@ -42,19 +40,20 @@ void assert_failed(uint8_t* file, uint32_t line)
 }
 void test(void){
 	GPIO_InitTypeDef GPIO_InitStructure;
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_4;
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP; 
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz; //50M
 	GPIO_Init(GPIOE, &GPIO_InitStructure);
 
-	GPIO_ResetBits(GPIOE,GPIO_Pin_4);
+	GPIO_ResetBits(GPIOB,GPIO_Pin_0);
 }
  int main(void)
  {		
  	 delay_init();	    	 //延时函数初始化	
 
 	 RCC_init();
-	switch_GPIO_init();
+	
+	 switch_GPIO_init();
 	 
 	//KEY_Init(); //初始化与案件链接的硬件接口
 	 
@@ -73,7 +72,7 @@ delay_ms(255);
  	TIM3_PWM_Init(1999,719);	 //720分频。PWM频率=72000000/720/2000=50hz
 	delay_ms(255);
 	
-	// motor_init();
+	 //motor_init();
 	 delay_ms(255);
 	 
 	 adapter_GPIO_init();
@@ -89,38 +88,46 @@ delay_ms(255);
 	ultrasonic_GPIO_init();
 	delay_ms(255);
 	
-	//RFID_SPI2_Init();
-	//RFID_SPI1_Init();//会用到舵机的PA6 与	PA7
-	
 	ultrasonic_IRQ_init();
 	 delay_ms(255);
-	 
+	 GPIO_ResetBits(GPIOB,GPIO_Pin_5);
+	 GPIO_SetBits(GPIOE,GPIO_Pin_5);
 	// UP();
 	 //DIS_motor();
-	//TIM_SetCompare1(TIM3,mg1);
-	//TIM_SetCompare2(TIM3,mg2);
+	TIM_SetCompare1(TIM3,mg1);
+	TIM_SetCompare2(TIM3,mg2);
 	TIM_SetCompare3(TIM3,mg3);
 	TIM_SetCompare4(TIM3,mg4);
 	//test();
+	
+	//test_GPIO_out_init();
 while(1)
 		{
 			
 			while(0){
+				//GPIO_ResetBits(GPIOB,GPIO_Pin_0);
+				//TIM_SetCompare1(TIM3,mg1);
+	//TIM_SetCompare2(TIM3,mg2);
+	//TIM_SetCompare3(TIM3,mg3);
+	//TIM_SetCompare4(TIM3,mg4);
+				//delay_ms(500);
+				test_GPIO_output();
 				//u16 t;
 				//t=Read_flag();//读取旗子信息
 				//trig_ultrasonic();
 			//PBout(12)=1;
-				//GPIO_ResetBits(GPIOE,GPIO_Pin_5);
-				//delay_ms(1000);
+				//GPIO_SetBits(GPIOB,GPIO_Pin_0);
+				//delay_ms(500);
+				//delay_ms(500);
 			//SPI_I2S_SendData(SPI2, 0x35); //Í¨¹ýÍâÉèSPIx·¢ËÍÒ»¸öÊý¾Ý
-		USART_SendData(USART2, 0x1998);//Ïò´®¿Ú1·¢ËÍÊý¾Ý
-				while(USART_GetFlagStatus(USART2,USART_FLAG_TC)!=SET);//µÈ´ý·¢ËÍ½áÊø
-			USART_SendData(USART2, 0xf00f);//Ïò´®¿Ú1·¢ËÍÊý¾Ý
-			while(USART_GetFlagStatus(USART2,USART_FLAG_TC)!=SET);//µÈ´ý·¢ËÍ½áÊø
+		//USART_SendData(USART2, 0x1998);//Ïò´®¿Ú1·¢ËÍÊý¾Ý
+			//	while(USART_GetFlagStatus(USART2,USART_FLAG_TC)!=SET);//µÈ´ý·¢ËÍ½áÊø
+			//USART_SendData(USART2, 0xf00f);//Ïò´®¿Ú1·¢ËÍÊý¾Ý
+			//while(USART_GetFlagStatus(USART2,USART_FLAG_TC)!=SET);//µÈ´ý·¢ËÍ½áÊø
 				
 			//PBout(12)=0;
-				//GPIO_SetBits(GPIOE,GPIO_Pin_5);
-				//delay_ms(1000);
+				//GPIO_SetBits(GPIOB,GPIO_Pin_0);
+				//delay_ms(500);
 				//delay_us(60);
 				//DOWN();
 	 //EN_motor();
@@ -308,14 +315,6 @@ while(1)
 			for(i=0;i<adapter2[0];i++)
 			delay_ms(adapter2[1]);
 			stop();
-			backward(3);
-			for(i=0;i<adapter3[0];i++)
-			delay_ms(adapter3[1]);
-			stop();
-			backward(4);
-			for(i=0;i<adapter4[0];i++)
-			delay_ms(adapter4[1]);
-			stop();
 		
 		}
 		if(b_flag==1){
@@ -330,14 +329,6 @@ while(1)
 			forward(2);
 			for(i=0;i<adapter2[0];i++)
 			delay_ms(adapter2[1]);
-			stop();
-			forward(3);
-			for(i=0;i<adapter3[0];i++)
-			delay_ms(adapter3[1]);
-			stop();
-			forward(4);
-				for(i=0;i<adapter4[0];i++)
-			delay_ms(adapter4[1]);
 			stop();
 			
 		}

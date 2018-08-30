@@ -3,5 +3,9 @@
 #include "usart.h"
 #include "sys.h"
 #include "delay.h"
-void test_GPIO_init(void);
-void test_GPIO(void);
+void test_GPIO_out_init(void);
+void test_GPIO_output(void);
+void test_GPIO_in_init(void);
+void test_GPIO_input(void);
+
+

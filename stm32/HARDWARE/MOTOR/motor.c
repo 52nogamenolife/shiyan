@@ -14,7 +14,7 @@ void motor_init(void){
 	GPIO_ResetBits(GPIOB,GPIO_Pin_7);
 	GPIO_ResetBits(GPIOB,GPIO_Pin_9);
 	
-	 GPIO_InitStructure.GPIO_Pin = GPIO_Pin_1|GPIO_Pin_2|GPIO_Pin_3|GPIO_Pin_4|GPIO_Pin_5;				 
+	 GPIO_InitStructure.GPIO_Pin = GPIO_Pin_1|GPIO_Pin_2|GPIO_Pin_3|GPIO_Pin_4|GPIO_Pin_0;				 
  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP; 		 //推挽输出
  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;		 //IO口速度为50MHz
  GPIO_Init(GPIOE, &GPIO_InitStructure);					 //根据设定参数初始化GPIOB.0 1 4 5 6 7 8 9
@@ -41,11 +41,11 @@ void DOWN(void){
 }
 
 void EN_motor(void){
-	GPIO_ResetBits(GPIOE,GPIO_Pin_5);
+	GPIO_ResetBits(GPIOE,GPIO_Pin_0);
 }
 
 void DIS_motor(void){
-	GPIO_SetBits(GPIOE,GPIO_Pin_5);
+	GPIO_SetBits(GPIOE,GPIO_Pin_0);
 }
 
 void stop_motor(void){
