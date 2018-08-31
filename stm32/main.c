@@ -72,7 +72,7 @@ delay_ms(255);
  	TIM3_PWM_Init(1999,719);	 //720分频。PWM频率=72000000/720/2000=50hz
 	delay_ms(255);
 	
-	 //motor_init();
+	 motor_init();
 	 delay_ms(255);
 	 
 	 adapter_GPIO_init();
