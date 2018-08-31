@@ -63,7 +63,7 @@ void test(void){
 	uart1_init(9600);	 //串口初始化为115200 负责蓝牙通信 上下机
 	delay_ms(255);
 	 
- 	uart2_init(9600);	 //串口初始化为115200 负责读取rfid
+ 	uart2_init(19200);	 //串口初始化为115200 负责读取rfid
 delay_ms(255);
 	
 	MG_GPIO_Init();			     //LED端口初始化
@@ -111,7 +111,7 @@ while(1)
 	//TIM_SetCompare3(TIM3,mg3);
 	//TIM_SetCompare4(TIM3,mg4);
 				//delay_ms(500);
-				test_GPIO_output();
+				//test_GPIO_output();
 				//u16 t;
 				//t=Read_flag();//读取旗子信息
 				//trig_ultrasonic();
@@ -279,7 +279,7 @@ while(1)
 				t=RFID_BUFFER[0]*256+RFID_BUFFER[1];//！！！！！！！！！！！！！！！！！！！！！！！！可能会反向！！！！！！！！！！！！！！！！
 				//t=RFID_BUFFER[0]+RFID_BUFFER[1]*256;
 			#endif
-			USART_SendData(USART1,t);
+			USART_SendData(USART2,t);
 		}
 		
 		if(B_flag==1){//到达拐角点 下面发送信号转会左右臂舵机

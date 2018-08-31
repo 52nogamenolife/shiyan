@@ -9,7 +9,7 @@
 
 u8 RFID_init_data[10] = {0xAA,0xBB,0x06,0x00,0x00,0x00,0x08,0x01,0x31,0x38};
 u8 Get_uid_data[9] = {0xAA,0xBB,0x05,0x00,0x00,0x00,0x01,0x10,0x11};
-u8 RFID_READ_data[18]={0xAA,0xBB,0x10,0x00,0x00,0x00,0x05,0x10,0x02,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x01,0x00};
+u8 RFID_READ_data[20]={0xAA,0xBB,0x10,0x00,0x00,0x00,0x05,0x10,0x02,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x01,0x00};
 u8 Disable_antenna_data[10]={0xAA,0xBB,0x06,0x00,0x00,0x00,0x0C,0x01,0x00,0x0D};
 //u8 data[100];
 u8 uid[8]={0};
@@ -96,10 +96,10 @@ u8 RFID_READ(u8 *uid,u8 *block)
 	u8 data[14]={0};
 	for(i=0;i<8;i++)
 		RFID_READ_data[i+9]=uid[i];
-	RFID_READ_data[17]=0;
-	for(i=4;i<17;i++)
-		RFID_READ_data[17]=RFID_READ_data[i]^RFID_READ_data[17];
-	uart_send_mydata(RFID_READ_data,18);
+	RFID_READ_data[19]=0;
+	for(i=4;i<19;i++)
+		RFID_READ_data[19]=RFID_READ_data[i]^RFID_READ_data[19];
+	uart_send_mydata(RFID_READ_data,20);
 	
 	i=0;
 	while(i<50)
@@ -161,26 +161,37 @@ u8  RFID_Disableantenna(void)
 }
 
 u8 Read_flag(){
-		u8 t=0;
+		u8 t=0,i=10;
+	while(!t&&i){
 		t=RFID_USART_Init();//有开天线
 		delay_ms(1000);
-		if(!t)
-			return 0;
-		
+		i--;
+	}	
+		i=10;
+		t=0;
+		while(!t&&i){
 		t=GET_UID(uid);//获取UID
 		delay_ms(1000);
-	if(!t)
-			return 0;
-		
+			i--;
+		}
+		i=10;
+		t=0;
+
+		while(!t&&i){
 		t=RFID_READ(uid,block);//读取rfid第一块数据
 		delay_ms(1000);
-	if(!t)
-			return 0;
-	
+			i--;
+		}
+		i=10;
+		t=0;
+
+	while(!t&&i){
 		t=RFID_Disableantenna();//关闭天线，减少发热 
 		delay_ms(1000);
-	if(!t)
-			return 0;
+		i--;
+	}
+		i=10;
+		t=0;
 	if(!block[1]){
 		return block[0];
 	}
