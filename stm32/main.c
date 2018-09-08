@@ -21,6 +21,8 @@
  广州市星翼电子科技有限公司  
  作者：正点原子 @ALIENTEK
 ************************************************/
+u16 a;
+extern u8 valid;
 extern u8 RFID_init_data[10];
 extern u16 motor1,motor2,motor3,motor4;//控制步进电机
 extern u8 speed1, speed2,speed3,speed4; 
@@ -105,6 +107,7 @@ while(1)
 		{
 			
 			while(0){
+				a=TIM_GetCounter(TIM5);
 				//GPIO_ResetBits(GPIOB,GPIO_Pin_0);
 				//TIM_SetCompare1(TIM3,mg1);
 	//TIM_SetCompare2(TIM3,mg2);
@@ -351,8 +354,7 @@ while(1)
 				
 				F_flag=3;
 		}
-		if(F_flag==3){
-			ultrasonic1=0;
+		if(F_flag==3&&!valid){
 			trig_ultrasonic();
 			getultrasonic();
 		}

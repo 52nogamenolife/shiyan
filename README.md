@@ -1,4 +1,5 @@
 # RoboGame
+！一定要把 exit.c文件导入到Fwlib中！！！！！
 已经使用的io口：PA2 PA3 PA6 PA7;PA11 PA9 PA10 PA12  PB0 PB1 PB5 PB6 PB7 PB3 PB9 PB12 PB13 PB14 PB15 PE7 PE8 PE9 PE10 PE11 PE13 PE14
 #被玩坏的家伙 PB4(PWM) PA13(pp) PA14(pp) PB8(蜂鸣器)  PA0 PA1;PA4 PA5
 #四个舵机使用TIM3的四个通道使用引脚为PA6 PA7 PB0 PB1
