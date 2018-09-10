@@ -9,7 +9,6 @@
 #include "ultrasonic.h"
 #include "switch.h"
 #include "MG.h"
-#include "spi.h"
 #include "motor.h"
 #include "test.h"
 /************************************************
@@ -354,7 +353,8 @@ while(1)
 				
 				F_flag=3;
 		}
-		if(F_flag==3&&!valid){
+		if(F_flag==3){
+			delay_ms(60);
 			trig_ultrasonic();
 			getultrasonic();
 		}

@@ -2,7 +2,6 @@
 #include "sys.h"
 #include "led.h"
 #include "key.h"
-#include "spi.h"
 #include "delay.h"
 #include "usart.h"
 #if USART
