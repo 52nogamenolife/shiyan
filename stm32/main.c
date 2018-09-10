@@ -93,14 +93,15 @@ delay_ms(255);
 	 delay_ms(255);
 	 GPIO_ResetBits(GPIOB,GPIO_Pin_5);
 	 GPIO_SetBits(GPIOE,GPIO_Pin_5);
-	// UP();
-	 //DIS_motor();
+	UP();
+	 DIS_motor();
 	TIM_SetCompare1(TIM3,mg1);
 	TIM_SetCompare2(TIM3,mg2);
 	TIM_SetCompare3(TIM3,mg3);
 	TIM_SetCompare4(TIM3,mg4);
 	//test();
-	
+	GPIO_SetBits(GPIOB,GPIO_Pin_13);
+	GPIO_SetBits(GPIOB,GPIO_Pin_14);
 	//test_GPIO_out_init();
 while(1)
 		{
@@ -232,18 +233,7 @@ while(1)
 						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 			USART_SendData(USART1, 0x0d0a);
 							while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
-			/*
-				for(i=0;i<looptime;i++){
-				TIM_SetCompare3(TIM3,0x06f0);
-				TIM_SetCompare4(TIM3,0x06f0);
-				delay_ms(40);
-				
-					TIM_SetCompare3(TIM3,2000);
-				TIM_SetCompare4(TIM3,2000);
-				delay_ms(delaytime);
-					
-			}
-				*/
+		
 			move_mg3(mg3,0x06f0);
 			mg3=0x06f0;
 			move_mg4(mg4,0x06f0);
