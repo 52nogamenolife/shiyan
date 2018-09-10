@@ -49,14 +49,14 @@ GPIO_EXTILineConfig(GPIO_PortSourceGPIOE,GPIO_PinSource4);
 
 EXTI_InitStructure.EXTI_Line = EXTI_Line9 ;
 EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;
-EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Falling;
+EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Rising_Falling;
 EXTI_InitStructure.EXTI_LineCmd = ENABLE;
 EXTI_Init(&EXTI_InitStructure);
 
 /*
 EXTI_InitStructure.EXTI_Line = EXTI_Line4 ;
 EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;
-EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Falling;
+EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Rising_Falling;
 EXTI_InitStructure.EXTI_LineCmd = ENABLE;
 EXTI_Init(&EXTI_InitStructure);
 */
@@ -133,8 +133,6 @@ void EXTI9_5_IRQHandler(void){
 		valid=1;
  ultrasonic1=TIM_GetCounter(TIM5);
 	}
-	
-	
 	} 
 }
 
