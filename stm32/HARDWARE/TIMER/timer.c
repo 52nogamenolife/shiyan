@@ -26,11 +26,12 @@
 //这里使用的是定时器3!
 
 u16 motor1=65534,motor2=0,motor3=0,motor4=0;//控制步进电
-u8 speed1=2,speed2=2,speed3=2,speed4=2; 
+u8 speed1=140,speed3=100;
+u8 motorstatus=0;
 extern u8 looptime,delaytime,Test;
-u8 speed1flag,speed2flag,speed3flag,speed4flag; 
+u8 speed1flag,speed3flag;
 extern u16 mg1,mg2,mg3,mg4;//控制最上方的舵机
-extern u8 adapter1[2],adapter2[2],adapter3[2],adapter4[2];//步进电机的转动时间
+extern u8 adapter1[2],adapter2[2];//步进电机的转动时间
 u16 num;
 u8 flag;
 u8 L_flag=0,R_flag=0,P_flag=0,F_flag=0,G_flag=0,B_flag=0;//左手 右手 放下 脱机 读取rfid 左右臂舵机回转
@@ -74,64 +75,27 @@ void TIM4_IRQHandler(void)   //TIM4中断 步进电机的PWM
 {
 	if (TIM_GetITStatus(TIM4, TIM_IT_Update) != RESET) //检查指定的TIM中断发生与否:TIM 中断源 
 		{
-		TIM_ClearITPendingBit(TIM4, TIM_IT_Update  );  //清除TIMx的中断待处理位:TIM 中断源 
-		speed1flag++;speed2flag++;speed3flag++;speed4flag++;
+		TIM_ClearITPendingBit(TIM4, TIM_IT_Update);  //清除TIMx的中断待处理位:TIM 中断源 
+		speed1flag++;speed3flag++;
 		if(speed1flag>=speed1){
-				speed1flag=0;	
-		if(motor1>0){
-			if(GPIO_ReadOutputDataBit(GPIOB,GPIO_Pin_6)){
-				GPIO_ResetBits(GPIOB,GPIO_Pin_6);
-				motor1--;
-			}
-			else {
-				GPIO_SetBits(GPIOB,GPIO_Pin_6);
-		}
-		
-		}
-	
-		}
-		if(speed2flag>=speed2){
-			speed2flag=0;
-		if(motor2>0){
-			if(GPIO_ReadOutputDataBit(GPIOB,GPIO_Pin_7)){
+			speed1flag=0;	
+			if(motor1>0){		
 				
-				GPIO_ResetBits(GPIOB,GPIO_Pin_7);
-				motor2--;
-					
-			}
-			else {
-			GPIO_SetBits(GPIOB,GPIO_Pin_7);
-			}
-		}
-	
-		}
-		if(speed3flag>=speed3){
-				speed3flag=0;
-			if(motor3>0){
-				if(GPIO_ReadOutputDataBit(GPIOB,GPIO_Pin_5)){
-					GPIO_ResetBits(GPIOB,GPIO_Pin_5);
-					motor3--;
+				if(motor1>=motornum-400){
+					motor1--;
 				}
-			else {
-				GPIO_SetBits(GPIOB,GPIO_Pin_5);
-			}
-		}
-			
-		}
-	if(speed4flag>=speed4){
-				speed4flag=0;
-		if(motor4>0){
-			if(GPIO_ReadOutputDataBit(GPIOB,GPIO_Pin_9)){
+				if(motor1==motornum-200){
+					speed1=speed3;
+				}
 				
-				GPIO_ResetBits(GPIOB,GPIO_Pin_9);
-				motor4--;
-			}
-			else {
-			GPIO_SetBits(GPIOB,GPIO_Pin_9);
-			
-			}
-		}
-		
+				if(motor1==motornum-400){
+					speed1=speed3-30;
+				}
+				speed1=speed3;
+				PBout(6)=motorstatus;
+				PBout(5)=motorstatus;	
+				motorstatus=!motorstatus;
+				}
 		}
 	}
 }
@@ -303,8 +267,8 @@ void get_motor(void)
 
 				case 'a': //ask 询问所有信息
 				
-				sprintf(information_all,"motor %d %d %d %d \r\n speed %d %d %d %d \r\n diangang %d %d %d %d \r\n mg %d %d %d %d\r\n mgyanshi looptime%d  delaytime%d\n F_flag=%d\n b_flag=%d\n",motor1,motor2,motor3,motor4,
-					speed1,speed2,speed3,speed4,
+				sprintf(information_all,"motor %d %d %d %d \r\n speed  %d %d \r\n diangang %d %d %d %d \r\n mg %d %d %d %d\r\n mgyanshi looptime%d  delaytime%d\n F_flag=%d\n b_flag=%d\n",motor1,motor2,motor3,motor4,
+					speed1,speed3,
 					adapter1[0],adapter1[1],adapter2[0],adapter2[1]
 					,mg1,mg2,mg3,mg4,looptime,delaytime,F_flag,b_flag);
 				Usart_SendString(USART1,information_all);
@@ -378,42 +342,18 @@ void get_motor(void)
 				USART_SendData(USART1, 0x0a);
 						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 							break;
-						case 2:
-							motor2=USART1_RX_BUF[2];
-							motor2*=256;
-							motor2+=USART1_RX_BUF[3];
-							speed2=USART1_RX_BUF[4];
-							speed2flag=0;
-							USART_SendData(USART1, 'T');
-							while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
-							USART_SendData(USART1, 0x0d);
-						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
-				USART_SendData(USART1, 0x0a);
-						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
-						break;
+					
 						case 3:
 							motor3=USART1_RX_BUF[2];
 							motor3*=256;
 							motor3+=USART1_RX_BUF[3];
 							speed3=USART1_RX_BUF[4];
-							speed2flag=0;
+							speed3flag=0;
 							USART_SendData(USART1, 'T');
 							while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 							USART_SendData(USART1, 0x0d);
 						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
-				USART_SendData(USART1, 0x0a);
-						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
-						case 4:
-							motor4=USART1_RX_BUF[2];
-							motor4*=256;
-							motor4+=USART1_RX_BUF[3];
-							speed4=USART1_RX_BUF[4];	
-							speed2flag=0;
-							USART_SendData(USART1, 'T');
-							while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
-							USART_SendData(USART1, 0x0d0a);
-							while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
-							break;
+			
 							default:
 							break;
 					}
@@ -450,15 +390,11 @@ void get_motor(void)
 								case 1:
 									speed1=USART1_RX_BUF[2];
 									break;
-								case 2:
-									speed2=USART1_RX_BUF[2];
-									break;
+							
 								case 3:
 									speed3=USART1_RX_BUF[2];
 									break;
-								case 4:
-									speed4=USART1_RX_BUF[2];
-									break;
+								
 								default:
 									break;
 							}

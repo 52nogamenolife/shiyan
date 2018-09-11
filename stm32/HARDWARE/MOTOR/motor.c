@@ -22,20 +22,18 @@ void motor_init(void){
 	
 }
 
-void UP(void){
+void DOWN(void){
 	GPIO_ResetBits(GPIOE,GPIO_Pin_1);
 	GPIO_ResetBits(GPIOE,GPIO_Pin_2);
-	GPIO_ResetBits(GPIOE,GPIO_Pin_3);
+	GPIO_SetBits(GPIOE,GPIO_Pin_3);
 	GPIO_SetBits(GPIOE,GPIO_Pin_4);
 	
 }
 
-
-
-void DOWN(void){
+void UP(void){
 	GPIO_SetBits(GPIOE,GPIO_Pin_1);
 	GPIO_SetBits(GPIOE,GPIO_Pin_2);
-	GPIO_SetBits(GPIOE,GPIO_Pin_3);
+	GPIO_ResetBits(GPIOE,GPIO_Pin_3);
 	GPIO_ResetBits(GPIOE,GPIO_Pin_4);
 	TIM_Cmd(TIM4, ENABLE);
 }

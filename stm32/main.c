@@ -20,12 +20,11 @@
  广州市星翼电子科技有限公司  
  作者：正点原子 @ALIENTEK
 ************************************************/
-u16 a;
 extern u8 valid;
 extern u8 RFID_init_data[10];
 extern u16 motor1,motor2,motor3,motor4;//控制步进电机
-extern u8 speed1, speed2,speed3,speed4; 
-u8 adapter1[2]={0,100},adapter2[2]={0,100};//步进电机的转动时间
+extern u8 speed1, speed3;
+u8 adapter1[2]={30,100},adapter2[2]={30,100};//步进电机的转动时间
 u16 mg1=1850,mg2=0x073a,mg3=1850,mg4=1850;//控制最上方的舵机
 u16 usart1_len,usart2_len;//串口数据长度
 u8 looptime=30,delaytime=100;
@@ -75,11 +74,12 @@ delay_ms(255);
 	
 	 motor_init();
 	 delay_ms(255);
-	 
+	 UP();
+	 DIS_motor();
 	 adapter_GPIO_init();
 	 delay_ms(255);
 	 
-	TIM4_Int_Init(498,71);	 //分频2。PWM频率=72000000/72/1000=1khz
+	TIM4_Int_Init(4,17);	 //分频2。PWM频率=72000000
 	delay_ms(255);
 	
 	 //超声波配置
@@ -93,8 +93,7 @@ delay_ms(255);
 	 delay_ms(255);
 	 GPIO_ResetBits(GPIOB,GPIO_Pin_5);
 	 GPIO_SetBits(GPIOE,GPIO_Pin_5);
-	UP();
-	 DIS_motor();
+	
 	TIM_SetCompare1(TIM3,mg1);
 	TIM_SetCompare2(TIM3,mg2);
 	TIM_SetCompare3(TIM3,mg3);
@@ -107,7 +106,7 @@ while(1)
 		{
 			
 			while(0){
-				a=TIM_GetCounter(TIM5);
+				
 				//GPIO_ResetBits(GPIOB,GPIO_Pin_0);
 				//TIM_SetCompare1(TIM3,mg1);
 	//TIM_SetCompare2(TIM3,mg2);
@@ -178,25 +177,7 @@ while(1)
 			P_flag=2;//我方好了！
 			L_flag=0;
 			R_flag=0;
-			USART_SendData(USART1, 'P');
-						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
-			USART_SendData(USART1, '\n');
-			
-						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
-			USART_SendData(USART1, 0x0d0a);
-							while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
-			/*
-				for(i=0;i<looptime;i++){
-				TIM_SetCompare3(TIM3,0x06f0);
-				TIM_SetCompare4(TIM3,0x06f0);
-				delay_ms(40);
-				
-					TIM_SetCompare3(TIM3,2000);
-				TIM_SetCompare4(TIM3,2000);
-				delay_ms(delaytime);
-					
-			}
-				*/
+
 			move_mg3(mg3,0x06f0);
 			mg3=0x06f0;
 			move_mg4(mg4,0x06f0);
@@ -204,17 +185,6 @@ while(1)
 			delay_ms(500);
 			delay_ms(500);
 			
-			
-			/*
-			for(i=0;i<looptime;i++){
-				TIM_SetCompare1(TIM3,0x073a);
-				TIM_SetCompare2(TIM3,0x780);
-				delay_ms(40);
-				TIM_SetCompare1(TIM3,2000);
-				TIM_SetCompare2(TIM3,2000);
-				delay_ms(delaytime);
-			}
-			*/
 			move_mg1(mg1,0x073a);
 			mg1=0x073a;
 			move_mg2(mg2,0x780);
@@ -241,23 +211,12 @@ while(1)
 			delay_ms(500);
 			delay_ms(500);
 			
-			
-			/*
-			for(i=0;i<looptime;i++){
-				TIM_SetCompare1(TIM3,0x073a);
-				TIM_SetCompare2(TIM3,0x780);
-				delay_ms(40);
-				TIM_SetCompare1(TIM3,2000);
-				TIM_SetCompare2(TIM3,2000);
-				delay_ms(delaytime);
-			}
-			*/
 			move_mg1(mg1,0x073a);
 			mg1=0x073a;
 			move_mg2(mg2,0x780);
 			mg2=0x780;
 			
-			//DOWN();
+			DOWN();
 		
 		}
 		if(G_flag==1){
@@ -275,17 +234,7 @@ while(1)
 		}
 		
 		if(B_flag==1){//到达拐角点 下面发送信号转会左右臂舵机
-			/*int i;
-			
-			for(i=0;i<looptime;i++){
-				TIM_SetCompare3(TIM3,0x0790);
-				TIM_SetCompare4(TIM3,0x0790);
-				delay_ms(40);
-				TIM_SetCompare3(TIM3,2000);
-				TIM_SetCompare4(TIM3,2000);
-				delay_ms(delaytime);
-			}
-			*/
+
 			move_mg3(mg3,0x0790);
 			mg3=0x0790;
 			move_mg4(mg4,0x0790);
@@ -331,17 +280,19 @@ while(1)
 			stop();
 				}
 		if(ultrasonic1>=7200){
-			//GPIO_SetBits(GPIOE,GPIO_Pin_5);//步进电机的使能线
-			F_flag=4;
+			//F_flag=4;
 		}
 		if(F_flag==2){//脱机上升
-				//EN_motor();
-				motor1=4000;
-				motor2=4000;
-				motor3=4000;
-				motor4=4000;
+				EN_motor();
+				motor1=motornum;
+				motor2=motornum;
+				motor3=motornum;
+				motor4=motornum;
 				
 				F_flag=3;
+		}
+		if(motor1==0){
+			stop_motor();
 		}
 		if(F_flag==3){
 			delay_ms(60);
@@ -350,10 +301,7 @@ while(1)
 		}
 			if(F_flag==4) {//缓慢上升
 				speed1=120;
-				speed2=120;
-				speed3=120;
-				speed4=120;
-				
+				speed3=120;		
 			}
 			
 			
