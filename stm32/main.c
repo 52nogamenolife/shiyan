@@ -29,7 +29,7 @@ u16 mg1=1850,mg2=0x073a,mg3=1850,mg4=1850;//控制最上方的舵机
 u16 usart1_len,usart2_len;//串口数据长度
 u8 looptime=30,delaytime=100;
 extern u8 b_flag,s_flag;//电杠回缩,停止
-extern u8 L_flag,R_flag,P_flag,F_flag,G_flag,B_flag;//左手 右手 放下 脱机 读取rfid 左右臂舵机回转
+extern u8 L_flag,R_flag,P_flag,F_flag,G_flag,B_flag,Ld_flag,Rd_flag;//左手 右手 放下 脱机 读取rfid 左右臂舵机回转
 extern u16 ultrasonic1;//超声波返回的定时器计数值
 extern u8 RFID_BUFFER[3];//rfid的读出的数据
 
@@ -80,6 +80,7 @@ delay_ms(255);
 	 delay_ms(255);
 	 
 	TIM4_Int_Init(4,17);	 //分频2。PWM频率=72000000
+	
 	delay_ms(255);
 	
 	 //超声波配置
@@ -107,70 +108,43 @@ while(1)
 			
 			while(0){
 				
-				//GPIO_ResetBits(GPIOB,GPIO_Pin_0);
-				//TIM_SetCompare1(TIM3,mg1);
-	//TIM_SetCompare2(TIM3,mg2);
-	//TIM_SetCompare3(TIM3,mg3);
-	//TIM_SetCompare4(TIM3,mg4);
-				//delay_ms(500);
-				//test_GPIO_output();
-				//u16 t;
-				//t=Read_flag();//读取旗子信息
-				//trig_ultrasonic();
-			//PBout(12)=1;
-				//GPIO_SetBits(GPIOB,GPIO_Pin_0);
-				//delay_ms(500);
-				//delay_ms(500);
-			//SPI_I2S_SendData(SPI2, 0x35); //Í¨¹ýÍâÉèSPIx·¢ËÍÒ»¸öÊý¾Ý
-		//USART_SendData(USART2, 0x1998);//Ïò´®¿Ú1·¢ËÍÊý¾Ý
-			//	while(USART_GetFlagStatus(USART2,USART_FLAG_TC)!=SET);//µÈ´ý·¢ËÍ½áÊø
-			//USART_SendData(USART2, 0xf00f);//Ïò´®¿Ú1·¢ËÍÊý¾Ý
-			//while(USART_GetFlagStatus(USART2,USART_FLAG_TC)!=SET);//µÈ´ý·¢ËÍ½áÊø
-				
-			//PBout(12)=0;
-				//GPIO_SetBits(GPIOB,GPIO_Pin_0);
-				//delay_ms(500);
-				//delay_us(60);
-				//DOWN();
-	 //EN_motor();
-				//uart_send_mydata(RFID_init_data,10);
 			}
 			
 		if(L_flag==1){
-			L_flag=2;;
-			/*int i;
-			
-			for(i=0;i<looptime;i++){
-				TIM_SetCompare1(TIM3,0x06f0);
-				delay_ms(40);
-				TIM_SetCompare1(TIM3,2000);
-				delay_ms(delaytime);
-			}
-			*/
+			L_flag=2;
+	
 			move_mg1(mg1,0x06f0);
 			mg1=0x06f0;
+			while(!Ld_flag){
+				USART_SendData(USART1, 'L');
+				while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+				USART_SendData(USART1, 'd');
+				while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+				USART_SendData(USART1, 0x0d);
+				while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+				USART_SendData(USART1, 0x0a);
+				while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 			
-      
-
+			}		
+			Ld_flag=0;
 		}
 		
 		if(R_flag==1){
 			R_flag=2;
-			/*int i;
-			
-			for(i=0;i<looptime;i++){
-				TIM_SetCompare2(TIM3,0x0710);
-				delay_ms(40);
-				TIM_SetCompare2(TIM3,2000);
-				delay_ms(delaytime);
-			}
-			*/
+	
 			move_mg2(mg2,0x0715);
 			mg2=0x0715;
-			
-		
-		
-
+			while(!Rd_flag){
+				USART_SendData(USART1, 'R');
+				while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+				USART_SendData(USART1, 'd');
+				while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+				USART_SendData(USART1, 0x0d);
+				while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+				USART_SendData(USART1, 0x0a);
+				while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+			}
+			Rd_flag=0;
 		}
 
 		if(P_flag==1){//放下 第一次到达 或者开关有效
@@ -196,14 +170,6 @@ while(1)
 			//stop_motor();
 		L_flag=0;
 			R_flag=0;
-			USART_SendData(USART1, 'P');
-						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
-			USART_SendData(USART1, '\n');
-			
-						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
-			USART_SendData(USART1, 0x0d0a);
-							while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
-		
 			move_mg3(mg3,0x06f0);
 			mg3=0x06f0;
 			move_mg4(mg4,0x06f0);
@@ -244,23 +210,28 @@ while(1)
 		}
 		
 		if(F_flag==1){
+			
 			int i;	
+				
 			F_flag=2;
 			b_flag=0;
 			//抓住  电缸前进后退
-			backward(1);
+		
+			backward(1);//上面
 			for(i=0;i<adapter1[0];i++)
 			delay_ms(adapter1[1]);
 			stop();
-			backward(2);
+			
+			backward(2);//下面
 			for(i=0;i<adapter2[0];i++)
 			delay_ms(adapter2[1]);
 			stop();
-		
+			
 		}
 		if(b_flag==1){
 			//抓住
 			int i;
+			DIS_motor();
 			b_flag=2;
 			F_flag=0;
 			forward(1);
@@ -271,6 +242,7 @@ while(1)
 			for(i=0;i<adapter2[0];i++)
 			delay_ms(adapter2[1]);
 			stop();
+			
 			
 		}
 		if(s_flag){
@@ -283,6 +255,7 @@ while(1)
 			//F_flag=4;
 		}
 		if(F_flag==2){//脱机上升
+			TIM_Cmd(TIM4,ENABLE);
 				EN_motor();
 				motor1=motornum;
 				motor2=motornum;

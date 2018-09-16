@@ -35,7 +35,6 @@ void UP(void){
 	GPIO_SetBits(GPIOE,GPIO_Pin_2);
 	GPIO_ResetBits(GPIOE,GPIO_Pin_3);
 	GPIO_ResetBits(GPIOE,GPIO_Pin_4);
-	TIM_Cmd(TIM4, ENABLE);
 }
 
 void EN_motor(void){

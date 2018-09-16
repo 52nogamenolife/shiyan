@@ -2,6 +2,7 @@
 #include "led.h"
 #include "usart.h"
 #include "ultrasonic.h"
+#include "adapter.h"
 //////////////////////////////////////////////////////////////////////////////////	 
 //本程序只供学习使用，未经作者许可，不得用于其它任何用途
 //ALIENTE精英STM32开发板
@@ -25,8 +26,9 @@
 //psc：时钟预分频数
 //这里使用的是定时器3!
 
-u16 motor1=65534,motor2=0,motor3=0,motor4=0;//控制步进电
-u8 speed1=140,speed3=100;
+u16 motor1=0,motor2=0,motor3=0,motor4=0;//控制步进电
+u8 speed1=16,speed3=10;
+u8 adapter_PWM=20;
 u8 motorstatus=0;
 extern u8 looptime,delaytime,Test;
 u8 speed1flag,speed3flag;
@@ -34,7 +36,7 @@ extern u16 mg1,mg2,mg3,mg4;//控制最上方的舵机
 extern u8 adapter1[2],adapter2[2];//步进电机的转动时间
 u16 num;
 u8 flag;
-u8 L_flag=0,R_flag=0,P_flag=0,F_flag=0,G_flag=0,B_flag=0;//左手 右手 放下 脱机 读取rfid 左右臂舵机回转
+u8 L_flag=0,R_flag=0,P_flag=0,F_flag=0,G_flag=0,B_flag=0,Ld_flag=0,Rd_flag=0;//左手 右手 放下 脱机 读取rfid 左右臂舵机回转 左抓完 右抓完
 extern u16 usart1_len,usart2_len;//串口数据长度
 u8 b_flag=0,s_flag=0;
 char information_all[50];
@@ -50,9 +52,11 @@ void Usart_SendString(USART_TypeDef* USARTx,char *str){
 
 void TIM4_Int_Init(u16 arr,u16 psc)
 {
+	
+
   TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
 	NVIC_InitTypeDef NVIC_InitStructure;
-
+	TIM_Cmd(TIM4,DISABLE); 
 	TIM_TimeBaseStructure.TIM_Period = arr; //设置在下一个更新事件装入活动的自动重装载寄存器周期的值	 计数到5000为500ms
 	TIM_TimeBaseStructure.TIM_Prescaler =psc; //设置用来作为TIMx时钟频率除数的预分频值  10Khz的计数频率  
 	TIM_TimeBaseStructure.TIM_ClockDivision = 0; //设置时钟分割:TDTS = Tck_tim
@@ -67,7 +71,7 @@ void TIM4_Int_Init(u16 arr,u16 psc)
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE; //IRQ通道被使能
 	NVIC_Init(&NVIC_InitStructure);  //根据NVIC_InitStruct中指定的参数初始化外设NVIC寄存器
 
-	TIM_Cmd(TIM4, ENABLE);  //使能TIMx外设
+	TIM_Cmd(TIM4,DISABLE); 
 							 
 }
 //定时器4中断服务程序
@@ -79,19 +83,23 @@ void TIM4_IRQHandler(void)   //TIM4中断 步进电机的PWM
 		speed1flag++;speed3flag++;
 		if(speed1flag>=speed1){
 			speed1flag=0;	
-			if(motor1>0){		
+			if(motor1>0){
 				
-				if(motor1>=motornum-400){
+				if(adapter_PWM==0){
+					adapter_PWM=20;
+					backward(1);
+				}
+				else{
+					stop();
+				}
+				adapter_PWM--;
+				/*
+				if(motor1>=motornum-300)
 					motor1--;
-				}
-				if(motor1==motornum-200){
-					speed1=speed3;
-				}
+				if(motor1==motornum-300)
+					speed1=1;
+				*/
 				
-				if(motor1==motornum-400){
-					speed1=speed3-30;
-				}
-				speed1=speed3;
 				PBout(6)=motorstatus;
 				PBout(5)=motorstatus;	
 				motorstatus=!motorstatus;
@@ -197,6 +205,11 @@ void get_motor(void)
 						USART1_RX_STA=0;
 						}
 					}
+					
+					else if(USART1_RX_BUF[1]=='d')
+							Ld_flag=1;
+						
+					
 					break;
 				case 'R':
 					if(USART1_RX_BUF[1]=='q'){
@@ -214,6 +227,8 @@ void get_motor(void)
 						USART1_RX_STA=0;
 						}
 					}
+					else if(USART1_RX_BUF[1]=='d')
+							Rd_flag=1;
 					break;
 				case 'P': 
 					if(USART1_RX_BUF[1]=='q'){
