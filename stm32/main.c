@@ -25,11 +25,11 @@ extern u8 RFID_init_data[10];
 extern u16 motor1,motor2,motor3,motor4;//控制步进电机
 extern u8 speed1, speed3;
 u8 adapter1[2]={30,100},adapter2[2]={30,100};//步进电机的转动时间
-u16 mg1=1850,mg2=0x073a,mg3=1850,mg4=1850;//控制最上方的舵机
+u16 mg1=1850,mg2=0x0780,mg3=0x0717,mg4=0x077f;//控制最上方的舵机
 u16 usart1_len,usart2_len;//串口数据长度
 u8 looptime=30,delaytime=100;
 extern u8 b_flag,s_flag;//电杠回缩,停止
-extern u8 L_flag,R_flag,P_flag,F_flag,G_flag,B_flag,Ld_flag,Rd_flag;//左手 右手 放下 脱机 读取rfid 左右臂舵机回转
+extern u8 L_flag,R_flag,P_flag,F_flag,G_flag,B_flag,Ld_flag,Rd_flag,rfid_send;//左手 右手 放下 脱机 读取rfid 左右臂舵机回转
 extern u16 ultrasonic1;//超声波返回的定时器计数值
 extern u8 RFID_BUFFER[3];//rfid的读出的数据
 
@@ -107,14 +107,22 @@ while(1)
 		{
 			
 			while(0){
-				
+				TIM_SetCompare2(TIM3,mg2);
+				delay_ms(1000);
+	TIM_SetCompare4(TIM3,mg4);
+				delay_ms(1000);
+				TIM_SetCompare3(TIM3,mg3);
+				delay_ms(1000);
 			}
 			
 		if(L_flag==1){
 			L_flag=2;
-	
+			move_mg3(mg3,0x077a);
+			mg3=0x077a;
 			move_mg1(mg1,0x06f0);
 			mg1=0x06f0;
+			move_mg3(mg3,0x0717);
+			mg3=0x0717;
 			while(!Ld_flag){
 				USART_SendData(USART1, 'L');
 				while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
@@ -131,9 +139,12 @@ while(1)
 		
 		if(R_flag==1){
 			R_flag=2;
-	
-			move_mg2(mg2,0x0715);
-			mg2=0x0715;
+			move_mg4(mg4,0x0719);
+			mg4=0x0719;
+			move_mg2(mg2,0x6f8);
+			mg2=0x06f8;
+			move_mg4(mg4,0x077f);
+			mg4=0x077f;
 			while(!Rd_flag){
 				USART_SendData(USART1, 'R');
 				while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
@@ -152,10 +163,10 @@ while(1)
 			L_flag=0;
 			R_flag=0;
 
-			move_mg3(mg3,0x06f0);
-			mg3=0x06f0;
-			move_mg4(mg4,0x06f0);
-			mg4=0x06f0;
+			move_mg3(mg3,0x0717);//左边
+			mg3=0x0717;
+			move_mg4(mg4,0x077f);//右边
+			mg4=0x077f;
 			delay_ms(500);
 			delay_ms(500);
 			
@@ -170,10 +181,10 @@ while(1)
 			//stop_motor();
 		L_flag=0;
 			R_flag=0;
-			move_mg3(mg3,0x06f0);
-			mg3=0x06f0;
-			move_mg4(mg4,0x06f0);
-			mg4=0x06f0;
+			move_mg3(mg3,0x0717);
+			mg3=0x0717;
+			move_mg4(mg4,0x077f);
+			mg4=0x077f;
 			delay_ms(500);
 			delay_ms(500);
 			
@@ -186,7 +197,9 @@ while(1)
 		
 		}
 		if(G_flag==1){
-			u16 t;
+				u16 t;
+			G_flag=2;
+		
 			#if USART
 				t=Read_flag();//读取旗子信息
 			#endif
@@ -196,15 +209,26 @@ while(1)
 				t=RFID_BUFFER[0]*256+RFID_BUFFER[1];//！！！！！！！！！！！！！！！！！！！！！！！！可能会反向！！！！！！！！！！！！！！！！
 				//t=RFID_BUFFER[0]+RFID_BUFFER[1]*256;
 			#endif
-			USART_SendData(USART2,t);
+			while(!rfid_send){
+				USART_SendData(USART2,'G');
+				while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+				
+				USART_SendData(USART2,t);
+				while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+				USART_SendData(USART1, 0x0d);
+				while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+				USART_SendData(USART1, 0x0a);
+				while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+			}
+			rfid_send=0;
 		}
 		
 		if(B_flag==1){//到达拐角点 下面发送信号转会左右臂舵机
-
-			move_mg3(mg3,0x0790);
-			mg3=0x0790;
-			move_mg4(mg4,0x0790);
-			mg4=0x0790;
+			move_mg4(mg4,0x0730);
+			mg4=0x0730;
+			move_mg3(mg3,0x0760);
+			mg3=0x0760;
+			
 			
 		B_flag=2;
 		}
@@ -251,7 +275,7 @@ while(1)
 			s_flag=0;
 			stop();
 				}
-		if(ultrasonic1>=7200){
+		if(ultrasonic1>=5700){
 			//F_flag=4;
 		}
 		if(F_flag==2){//脱机上升
@@ -274,7 +298,7 @@ while(1)
 		}
 			if(F_flag==4) {//缓慢上升
 				speed1=120;
-				speed3=120;		
+				//speed3=120;		
 			}
 			
 			

@@ -27,8 +27,8 @@
 //这里使用的是定时器3!
 
 u16 motor1=0,motor2=0,motor3=0,motor4=0;//控制步进电
-u8 speed1=16,speed3=10;
-u8 adapter_PWM=20;
+u8 speed1=40,speed3=10;
+u8 adapter_PWM=50;
 u8 motorstatus=0;
 extern u8 looptime,delaytime,Test;
 u8 speed1flag,speed3flag;
@@ -36,7 +36,7 @@ extern u16 mg1,mg2,mg3,mg4;//控制最上方的舵机
 extern u8 adapter1[2],adapter2[2];//步进电机的转动时间
 u16 num;
 u8 flag;
-u8 L_flag=0,R_flag=0,P_flag=0,F_flag=0,G_flag=0,B_flag=0,Ld_flag=0,Rd_flag=0;//左手 右手 放下 脱机 读取rfid 左右臂舵机回转 左抓完 右抓完
+u8 L_flag=0,R_flag=0,P_flag=0,F_flag=0,G_flag=0,B_flag=0,Ld_flag=0,Rd_flag=0,rfid_send=0;//左手 右手 放下 脱机 读取rfid 左右臂舵机回转 左抓完 右抓完
 extern u16 usart1_len,usart2_len;//串口数据长度
 u8 b_flag=0,s_flag=0;
 char information_all[50];
@@ -85,14 +85,18 @@ void TIM4_IRQHandler(void)   //TIM4中断 步进电机的PWM
 			speed1flag=0;	
 			if(motor1>0){
 				
-				if(adapter_PWM==0){
-					adapter_PWM=20;
+				if(adapter_PWM<=10){
+					
+					adapter_PWM=50;
 					backward(1);
+					if(!adapter_PWM)
+						adapter_PWM=50;
 				}
 				else{
 					stop();
 				}
 				adapter_PWM--;
+				
 				/*
 				if(motor1>=motornum-300)
 					motor1--;
@@ -265,7 +269,8 @@ void get_motor(void)
 					break;
 				case 'G':
 					if(USART1_RX_BUF[1]=='q'){
-						G_flag=1;
+						if(!G_flag)
+							G_flag=1;
 						while(USART1_RX_STA&0x8000&&USART1_RX_BUF[0]=='G'&&USART1_RX_BUF[1]=='q'){		
 						USART_SendData(USART1, 'G');
 						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
@@ -278,6 +283,10 @@ void get_motor(void)
 						USART1_RX_STA=0;
 						}
 					}
+					else if(USART1_RX_BUF[1]=='d'){
+						rfid_send=1;
+					}
+					
 					break;
 
 				case 'a': //ask 询问所有信息
