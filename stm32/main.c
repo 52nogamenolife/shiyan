@@ -25,7 +25,7 @@ extern u8 RFID_init_data[10];
 extern u16 motor1,motor2,motor3,motor4;//控制步进电机
 extern u8 speed1, speed3;
 u8 adapter1[2]={30,100},adapter2[2]={30,100};//步进电机的转动时间
-u16 mg1=1850,mg2=0x0780,mg3=0x0717,mg4=0x077f;//控制最上方的舵机
+u16 mg1=1900,mg2=0x073a,mg3=0x0717,mg4=0x077f,mg5=0x0780,mg6=0x0780;//控制最上方的舵机
 u16 usart1_len,usart2_len;//串口数据长度
 u8 looptime=30,delaytime=100;
 extern u8 b_flag,s_flag;//电杠回缩,停止
@@ -71,7 +71,7 @@ delay_ms(255);
 	
  	TIM3_PWM_Init(1999,719);	 //720分频。PWM频率=72000000/720/2000=50hz
 	delay_ms(255);
-	
+	TIM2_PWM_Init(1999,719);	 //720分频。PWM频率=72000000/720/2000=50hz
 	 motor_init();
 	 delay_ms(255);
 	 UP();
@@ -79,7 +79,7 @@ delay_ms(255);
 	 adapter_GPIO_init();
 	 delay_ms(255);
 	 
-	TIM4_Int_Init(4,17);	 //分频2。PWM频率=72000000
+	TIM4_Int_Init(40,17);	 //分频2。PWM频率=72000000
 	
 	delay_ms(255);
 	
@@ -92,13 +92,15 @@ delay_ms(255);
 	
 	ultrasonic_IRQ_init();
 	 delay_ms(255);
-	 GPIO_ResetBits(GPIOB,GPIO_Pin_5);
 	 GPIO_SetBits(GPIOE,GPIO_Pin_5);
+	GPIO_ResetBits(GPIOB,GPIO_Pin_5);
 	
 	TIM_SetCompare1(TIM3,mg1);
 	TIM_SetCompare2(TIM3,mg2);
 	TIM_SetCompare3(TIM3,mg3);
 	TIM_SetCompare4(TIM3,mg4);
+	TIM_SetCompare1(TIM2,mg5);
+	TIM_SetCompare2(TIM2,mg6);
 	//test();
 	GPIO_SetBits(GPIOB,GPIO_Pin_13);
 	GPIO_SetBits(GPIOB,GPIO_Pin_14);
@@ -106,12 +108,13 @@ delay_ms(255);
 while(1)
 		{
 			
-			while(0){
+			while(1){
+				TIM_SetCompare1(TIM3,mg1);
 				TIM_SetCompare2(TIM3,mg2);
-				delay_ms(1000);
-	TIM_SetCompare4(TIM3,mg4);
-				delay_ms(1000);
+				TIM_SetCompare4(TIM3,mg4);
 				TIM_SetCompare3(TIM3,mg3);
+				TIM_SetCompare1(TIM2,mg5);
+				TIM_SetCompare2(TIM2,mg6);
 				delay_ms(1000);
 			}
 			
@@ -119,8 +122,12 @@ while(1)
 			L_flag=2;
 			move_mg3(mg3,0x077a);
 			mg3=0x077a;
+			move_mg5(mg5,0x0710);
+			mg5=0x0710;
 			move_mg1(mg1,0x06f0);
 			mg1=0x06f0;
+			move_mg5(mg3,0x0780);
+			mg5=0x0780;
 			move_mg3(mg3,0x0717);
 			mg3=0x0717;
 			while(!Ld_flag){
@@ -141,8 +148,12 @@ while(1)
 			R_flag=2;
 			move_mg4(mg4,0x0719);
 			mg4=0x0719;
-			move_mg2(mg2,0x6f8);
-			mg2=0x06f8;
+			move_mg6(mg6,0x0718);
+			mg6=0x0718;
+			move_mg2(mg2,0x0705);
+			mg2=0x0705;
+			move_mg6(mg6,0x0770);
+			mg6=0x0770;
 			move_mg4(mg4,0x077f);
 			mg4=0x077f;
 			while(!Rd_flag){
@@ -170,6 +181,13 @@ while(1)
 			delay_ms(500);
 			delay_ms(500);
 			
+			move_mg5(mg5,0x0720);//左边
+			mg3=0x0720;
+			move_mg6(mg6,0x0728);//右边
+			mg4=0x0728;
+			delay_ms(500);
+			delay_ms(500);
+			
 			move_mg1(mg1,0x073a);
 			mg1=0x073a;
 			move_mg2(mg2,0x780);
@@ -185,6 +203,13 @@ while(1)
 			mg3=0x0717;
 			move_mg4(mg4,0x077f);
 			mg4=0x077f;
+			delay_ms(500);
+			delay_ms(500);
+			
+			move_mg5(mg5,0x0720);//左边
+			mg3=0x0720;
+			move_mg6(mg6,0x0728);//右边
+			mg4=0x0728;
 			delay_ms(500);
 			delay_ms(500);
 			
@@ -224,11 +249,11 @@ while(1)
 		}
 		
 		if(B_flag==1){//到达拐角点 下面发送信号转会左右臂舵机
-			move_mg4(mg4,0x0730);
+		/*	move_mg4(mg4,0x0730);
 			mg4=0x0730;
 			move_mg3(mg3,0x0760);
 			mg3=0x0760;
-			
+			*/
 			
 		B_flag=2;
 		}

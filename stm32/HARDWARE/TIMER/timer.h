@@ -18,7 +18,7 @@
 #define motornum 4000
 
 void TIM3_PWM_Init(u16 arr,u16 psc);
-
+void TIM2_PWM_Init(u16 arr,u16 psc);
 void TIM4_Int_Init(u16 arr,u16 psc);
 void get_motor(void);
 void RCC_init(void);
