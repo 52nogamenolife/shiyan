@@ -26,9 +26,9 @@
 //psc：时钟预分频数
 //这里使用的是定时器3!
 
-u16 motor1=0,motor2=0,motor3=0,motor4=0;//控制步进电
+u32 motor1=0,motor2=0,motor3=0,motor4=0;//控制步进电
 u8 speed1=32,speed3=10;
-u8 adapter_PWM=50;
+u8 adapter_PWM=10;
 u8 motorstatus=0;
 extern u8 looptime,delaytime,Test;
 u8 speed1flag,speed3flag;
@@ -84,11 +84,10 @@ void TIM4_IRQHandler(void)   //TIM4中断 步进电机的PWM
 		if(speed1flag>=speed1){
 			speed1flag=0;	
 			if(motor1>0){
-				
+				motor1--;
 				if(adapter_PWM<=4){
 					
 					forward (2);
-				
 					if(adapter_PWM<=0)
 						adapter_PWM=10;
 				}
