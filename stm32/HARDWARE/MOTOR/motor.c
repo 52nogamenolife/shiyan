@@ -24,17 +24,18 @@ void motor_init(void){
 
 void UP(void){
 	GPIO_ResetBits(GPIOE,GPIO_Pin_1);
-	GPIO_ResetBits(GPIOE,GPIO_Pin_2);
-	GPIO_ResetBits(GPIOE,GPIO_Pin_4);
+	GPIO_SetBits(GPIOE,GPIO_Pin_2);
+
 	GPIO_SetBits(GPIOE,GPIO_Pin_3);
-	
+		GPIO_ResetBits(GPIOE,GPIO_Pin_4);
 }
 
 void DOWN(void){
 	GPIO_SetBits(GPIOE,GPIO_Pin_1);
-	GPIO_SetBits(GPIOE,GPIO_Pin_2);
-	GPIO_SetBits(GPIOE,GPIO_Pin_4);
+	GPIO_ResetBits(GPIOE,GPIO_Pin_2);
+
 	GPIO_ResetBits(GPIOE,GPIO_Pin_3);
+		GPIO_SetBits(GPIOE,GPIO_Pin_4);
 }
 
 void EN_motor(void){
@@ -42,6 +43,7 @@ void EN_motor(void){
 }
 
 void DIS_motor(void){
+	TIM_Cmd(TIM4, DISABLE);
 	GPIO_SetBits(GPIOE,GPIO_Pin_0);
 }
 

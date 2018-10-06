@@ -25,11 +25,11 @@ extern u8 RFID_init_data[10];
 extern u16 motor1,motor2,motor3,motor4;//控制步进电机
 extern u8 speed1, speed3;
 u8 adapter1[2]={30,100},adapter2[2]={30,100};//步进电机的转动时间
-u16 mg1=1900,mg2=0x073a,mg3=0x0717,mg4=0x077f,mg5=0x0780,mg6=0x0780;//控制最上方的舵机
+u16 mg1=1850,mg2=1900,mg3=0x0717,mg4=0x077f,mg5=0x0758,mg6=0x0758;//控制最上方的舵机
 u16 usart1_len,usart2_len;//串口数据长度
 u8 looptime=30,delaytime=100;
 extern u8 b_flag,s_flag;//电杠回缩,停止
-extern u8 L_flag,R_flag,P_flag,F_flag,G_flag,B_flag,Ld_flag,Rd_flag,rfid_send;//左手 右手 放下 脱机 读取rfid 左右臂舵机回转
+extern u8 L_flag,R_flag,P_flag,F_flag,G_flag,B_flag,Ld_flag,Rd_flag,rfid_send,Pd_flag,Fd_flag,end_flag;//左手 右手 放下 脱机 读取rfid 左右臂舵机回转
 extern u16 ultrasonic1;//超声波返回的定时器计数值
 extern u8 RFID_BUFFER[3];//rfid的读出的数据
 
@@ -47,7 +47,24 @@ void test(void){
 
 	GPIO_ResetBits(GPIOB,GPIO_Pin_0);
 }
- int main(void)
+void reset(void){
+	
+	move_mg5(mg5,0x0758);
+		mg5=0x0758;
+			delay_ms(500);
+	move_mg6(mg6,0x0758);
+	mg6=0x0758;
+			delay_ms(500);
+	
+	move_mg3(mg3,0x0717);
+	mg3=0x0717;
+			delay_ms(500);
+	move_mg4(mg4,0x077f);
+	mg4=0x077f;
+			delay_ms(500);
+	
+}
+ int main(void) 
  {		
  	 delay_init();	    	 //延时函数初始化	
 
@@ -79,7 +96,7 @@ delay_ms(255);
 	 adapter_GPIO_init();
 	 delay_ms(255);
 	 
-	TIM4_Int_Init(40,17);	 //分频2。PWM频率=72000000
+	TIM4_Int_Init(4,17);	 //分频2。PWM频率=72000000
 	
 	delay_ms(255);
 	
@@ -96,19 +113,26 @@ delay_ms(255);
 	GPIO_ResetBits(GPIOB,GPIO_Pin_5);
 	
 	TIM_SetCompare1(TIM3,mg1);
+	delay_ms(1000);
 	TIM_SetCompare2(TIM3,mg2);
+	delay_ms(1000);
 	TIM_SetCompare3(TIM3,mg3);
+	delay_ms(1000);
 	TIM_SetCompare4(TIM3,mg4);
+	delay_ms(1000);
 	TIM_SetCompare1(TIM2,mg5);
+	delay_ms(1000);
 	TIM_SetCompare2(TIM2,mg6);
 	//test();
 	GPIO_SetBits(GPIOB,GPIO_Pin_13);
 	GPIO_SetBits(GPIOB,GPIO_Pin_14);
 	//test_GPIO_out_init();
+	delay_ms(1000);
+
 while(1)
 		{
 			
-			while(1){
+			while(0){
 				TIM_SetCompare1(TIM3,mg1);
 				TIM_SetCompare2(TIM3,mg2);
 				TIM_SetCompare4(TIM3,mg4);
@@ -124,12 +148,19 @@ while(1)
 			mg3=0x077a;
 			move_mg5(mg5,0x0710);
 			mg5=0x0710;
-			move_mg1(mg1,0x06f0);
-			mg1=0x06f0;
-			move_mg5(mg3,0x0780);
-			mg5=0x0780;
+			move_mg2(mg2,1790);//左手掌
+			mg2=1790;
+			delay_ms(1000);
 			move_mg3(mg3,0x0717);
 			mg3=0x0717;
+			TIM_SetCompare2(TIM3,2100);
+			TIM_SetCompare1(TIM3,2100);
+			move_mg5(mg5,0x0770);
+			mg5=0x0770;
+
+			TIM_SetCompare1(TIM3,mg1);
+			TIM_SetCompare2(TIM3,mg2);
+			Ld_flag=0;
 			while(!Ld_flag){
 				USART_SendData(USART1, 'L');
 				while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
@@ -141,7 +172,6 @@ while(1)
 				while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 			
 			}		
-			Ld_flag=0;
 		}
 		
 		if(R_flag==1){
@@ -150,12 +180,23 @@ while(1)
 			mg4=0x0719;
 			move_mg6(mg6,0x0718);
 			mg6=0x0718;
-			move_mg2(mg2,0x0705);
-			mg2=0x0705;
-			move_mg6(mg6,0x0770);
-			mg6=0x0770;
+			
+			move_mg1(mg1,0x06f0);
+			mg1=0x06f0;
+			delay_ms(1000);
+
+			TIM_SetCompare1(TIM3,2100);
+			TIM_SetCompare2(TIM3,2100);
+			move_mg6(mg6,0x0744);
+			mg6=0x0744;
+						
 			move_mg4(mg4,0x077f);
 			mg4=0x077f;
+			
+		TIM_SetCompare1(TIM3,mg1);
+	
+		TIM_SetCompare2(TIM3,mg2);
+		Rd_flag=0;
 			while(!Rd_flag){
 				USART_SendData(USART1, 'R');
 				while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
@@ -166,50 +207,65 @@ while(1)
 				USART_SendData(USART1, 0x0a);
 				while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 			}
-			Rd_flag=0;
 		}
-
+		if((R_flag+L_flag)==4){
+			B_flag=1;
+		R_flag=0;
+			L_flag=0;
+		}
 		if(P_flag==1){//放下 第一次到达 或者开关有效
 			P_flag=2;//我方好了！
 			L_flag=0;
 			R_flag=0;
-
-			move_mg3(mg3,0x0717);//左边
-			mg3=0x0717;
-			move_mg4(mg4,0x077f);//右边
+			
+			
+			move_mg4(mg4,0x077f	);//右边
 			mg4=0x077f;
-			delay_ms(500);
+			move_mg3(mg3,0x077a);//左边
+			mg3=0x077a;
 			delay_ms(500);
 			
+			TIM_SetCompare1(TIM3,2100);
+			TIM_SetCompare2(TIM3,2100);
+			
 			move_mg5(mg5,0x0720);//左边
-			mg3=0x0720;
+			mg5=0x0720;
 			move_mg6(mg6,0x0728);//右边
-			mg4=0x0728;
+			mg6=0x0728;
 			delay_ms(500);
-			delay_ms(500);
+			
 			
 			move_mg1(mg1,0x073a);
 			mg1=0x073a;
 			move_mg2(mg2,0x780);
 			mg2=0x780;
 			
+			reset();
 			
-		}	
-		if(GPIO_ReadInputDataBit(GPIOE,GPIO_Pin_7)){
+			Pd_flag=0;
+			while(!Pd_flag){
+				USART_SendData(USART1, 'P');
+				while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+				USART_SendData(USART1, 'd');
+				while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+				USART_SendData(USART1, 0x0d);
+				while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+				USART_SendData(USART1, 0x0a);
+				while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+			}
+		}
+		if(0){
 			//stop_motor();
 		L_flag=0;
 			R_flag=0;
-			move_mg3(mg3,0x0717);
-			mg3=0x0717;
-			move_mg4(mg4,0x077f);
-			mg4=0x077f;
-			delay_ms(500);
-			delay_ms(500);
+			
+			TIM_SetCompare1(TIM3,2100);
+			TIM_SetCompare2(TIM3,2100);
 			
 			move_mg5(mg5,0x0720);//左边
-			mg3=0x0720;
+			mg5=0x0720;
 			move_mg6(mg6,0x0728);//右边
-			mg4=0x0728;
+			mg6=0x0728;
 			delay_ms(500);
 			delay_ms(500);
 			
@@ -217,6 +273,8 @@ while(1)
 			mg1=0x073a;
 			move_mg2(mg2,0x780);
 			mg2=0x780;
+			
+			reset();
 			
 			DOWN();
 		
@@ -231,9 +289,10 @@ while(1)
 				
 			#if SPI
 				RFID_SPI_READ();
-				t=RFID_BUFFER[0]*256+RFID_BUFFER[1];//！！！！！！！！！！！！！！！！！！！！！！！！可能会反向！！！！！！！！！！！！！！！！
+				t=RFID_BUFFER[0]*256+RFID_BUFFER[1];//！！！！！！！！！！！       ！！！！！！！！！！！！！可能会反向！！！！！！！！！！！！！！！！
 				//t=RFID_BUFFER[0]+RFID_BUFFER[1]*256;
 			#endif
+			rfid_send=0;
 			while(!rfid_send){
 				USART_SendData(USART2,'G');
 				while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
@@ -249,19 +308,17 @@ while(1)
 		}
 		
 		if(B_flag==1){//到达拐角点 下面发送信号转会左右臂舵机
-		/*	move_mg4(mg4,0x0730);
-			mg4=0x0730;
-			move_mg3(mg3,0x0760);
-			mg3=0x0760;
-			*/
+			move_mg3(mg3,0x0717);//左边
+			mg3=0x0717;
+			move_mg4(mg4,0x0719	);//右边
+			mg4=0x0719;
 			
 		B_flag=2;
 		}
 		
 		if(F_flag==1){
-			
-			int i;	
-				
+			int i;
+
 			F_flag=2;
 			b_flag=0;
 			//抓住  电缸前进后退
@@ -275,6 +332,22 @@ while(1)
 			for(i=0;i<adapter2[0];i++)
 			delay_ms(adapter2[1]);
 			stop();
+			
+				end_flag=0;
+			Fd_flag=0;
+			while(!Fd_flag){
+				USART_SendData(USART1, 'F');
+				while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+				USART_SendData(USART1, 'd');
+				while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+				USART_SendData(USART1, 0x0d);
+				while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+				USART_SendData(USART1, 0x0a);
+				while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+			}
+		
+			while(!end_flag){
+			}
 			
 		}
 		if(b_flag==1){
@@ -325,7 +398,6 @@ while(1)
 				speed1=120;
 				//speed3=120;		
 			}
-			
 			
 	}
 	
