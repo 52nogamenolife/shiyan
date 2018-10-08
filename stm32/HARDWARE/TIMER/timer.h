@@ -15,7 +15,7 @@
 //All rights reserved									  
 //********************************************************************************
 
-#define motornum 768000
+#define motornum 864000
 
 void TIM3_PWM_Init(u16 arr,u16 psc);
 void TIM2_PWM_Init(u16 arr,u16 psc);

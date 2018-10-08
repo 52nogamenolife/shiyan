@@ -22,10 +22,10 @@
 ************************************************/
 extern u8 valid;
 extern u8 RFID_init_data[10];
-extern u16 motor1,motor2,motor3,motor4;//控制步进电机
+extern u32 motor1,motor2,motor3,motor4;//控制步进电机
 extern u8 speed1, speed3;
 u8 adapter1[2]={30,100},adapter2[2]={30,100};//步进电机的转动时间
-u16 mg1=1850,mg2=1900,mg3=0x0717,mg4=0x077f,mg5=0x0758,mg6=0x0758;//控制最上方的舵机
+u16 mg1=1900,mg2=1900,mg3=1838,mg4=0x077f,mg5=0x0758,mg6=0x0758;//控制最上方的舵机
 u16 usart1_len,usart2_len;//串口数据长度
 u8 looptime=30,delaytime=100;
 extern u8 b_flag,s_flag;//电杠回缩,停止
@@ -48,20 +48,34 @@ void test(void){
 	GPIO_ResetBits(GPIOB,GPIO_Pin_0);
 }
 void reset(void){
-	
+	mg5=0x0758;
+	mg6=0x0758;
+	mg3=1838;
+	mg4=0x077f;
+	TIM_SetCompare4(TIM3,mg4);
+delay_ms(1000);
+	TIM_SetCompare3(TIM3,mg3);
+	delay_ms(1000);
+	TIM_SetCompare1(TIM2,mg5);
+	delay_ms(1000);
+	TIM_SetCompare2(TIM2,mg6);
+	delay_ms(1000);
+	/*
 	move_mg5(mg5,0x0758);
-		mg5=0x0758;
+		
 			delay_ms(500);
 	move_mg6(mg6,0x0758);
-	mg6=0x0758;
+	
 			delay_ms(500);
 	
-	move_mg3(mg3,0x0717);
-	mg3=0x0717;
+	move_mg3(mg3,1838);
+	
 			delay_ms(500);
 	move_mg4(mg4,0x077f);
-	mg4=0x077f;
+	
 			delay_ms(500);
+	*/
+	
 	
 }
  int main(void) 
@@ -133,30 +147,36 @@ while(1)
 		{
 			
 			while(0){
+				
 				TIM_SetCompare1(TIM3,mg1);
 				TIM_SetCompare2(TIM3,mg2);
-				TIM_SetCompare4(TIM3,mg4);
-				TIM_SetCompare3(TIM3,mg3);
-				TIM_SetCompare1(TIM2,mg5);
-				TIM_SetCompare2(TIM2,mg6);
+				
 				delay_ms(1000);
 			}
 			
 		if(L_flag==1){
 			L_flag=2;
-			move_mg3(mg3,0x077a);
-			mg3=0x077a;
+			move_mg3(mg3,1930);
+			mg3=1930;
 			move_mg5(mg5,0x0710);
 			mg5=0x0710;
-			move_mg2(mg2,1790);//左手掌
-			mg2=1790;
+			move_mg2(mg2,0x0705);//左手掌
+			mg2=0x0705;
 			delay_ms(1000);
-			move_mg3(mg3,0x0717);
-			mg3=0x0717;
+			move_mg3(mg3,1838);
+			mg3=1838;
 			TIM_SetCompare2(TIM3,2100);
 			TIM_SetCompare1(TIM3,2100);
+			if(R_flag==2){
+			move_mg5(mg5,0x0758);
+			mg5=0x0758;
+			}
+			if(R_flag==0){
 			move_mg5(mg5,0x0770);
 			mg5=0x0770;
+			delay_ms(1000);
+			TIM_SetCompare1(TIM2,2100);
+			}
 
 			TIM_SetCompare1(TIM3,mg1);
 			TIM_SetCompare2(TIM3,mg2);
@@ -181,15 +201,22 @@ while(1)
 			move_mg6(mg6,0x0718);
 			mg6=0x0718;
 			
-			move_mg1(mg1,0x06f0);
-			mg1=0x06f0;
+			move_mg1(mg1,0x0710);
+			mg1=0x0710;
 			delay_ms(1000);
 
 			TIM_SetCompare1(TIM3,2100);
 			TIM_SetCompare2(TIM3,2100);
-			move_mg6(mg6,0x0744);
-			mg6=0x0744;
-						
+			if(L_flag==2){
+			move_mg6(mg6,0x0758);
+			mg6=0x0758;
+			}
+			if(L_flag==0){
+			move_mg6(mg6,0x0778);
+			mg6=0x0778;
+			delay_ms(1000);
+			TIM_SetCompare2(TIM2,2100);
+			}
 			move_mg4(mg4,0x077f);
 			mg4=0x077f;
 			
@@ -219,19 +246,20 @@ while(1)
 			R_flag=0;
 			
 			
-			move_mg4(mg4,0x077f	);//右边
-			mg4=0x077f;
+			move_mg4(mg4,0x0788	);//右边
+			mg4=0x0788;
 			move_mg3(mg3,0x077a);//左边
 			mg3=0x077a;
 			delay_ms(500);
 			
 			TIM_SetCompare1(TIM3,2100);
 			TIM_SetCompare2(TIM3,2100);
-			
-			move_mg5(mg5,0x0720);//左边
-			mg5=0x0720;
 			move_mg6(mg6,0x0728);//右边
 			mg6=0x0728;
+			TIM_SetCompare2(TIM2,2100);
+			move_mg5(mg5,0x0720);//左边
+			mg5=0x0720;
+			
 			delay_ms(500);
 			
 			
@@ -308,11 +336,14 @@ while(1)
 		}
 		
 		if(B_flag==1){//到达拐角点 下面发送信号转会左右臂舵机
-			move_mg3(mg3,0x0717);//左边
-			mg3=0x0717;
+			move_mg3(mg3,1780);//左边
+			mg3=1780;
 			move_mg4(mg4,0x0719	);//右边
 			mg4=0x0719;
-			
+			move_mg6(mg6,0x0770	);//右边
+			mg6=0x0770;
+			move_mg5(mg5,0x0770	);//右边
+			mg5=0x0770;
 		B_flag=2;
 		}
 		
@@ -332,6 +363,8 @@ while(1)
 			for(i=0;i<adapter2[0];i++)
 			delay_ms(adapter2[1]);
 			stop();
+			
+				EN_motor();
 			
 				end_flag=0;
 			Fd_flag=0;
@@ -371,14 +404,13 @@ while(1)
 			F_flag=0;
 			b_flag=0;
 			s_flag=0;
-			stop();
+			stop_motor();
 				}
 		if(ultrasonic1>=5700){
 			//F_flag=4;
 		}
 		if(F_flag==2){//脱机上升
 			TIM_Cmd(TIM4,ENABLE);
-				EN_motor();
 				motor1=motornum;
 				motor2=motornum;
 				motor3=motornum;
@@ -386,8 +418,9 @@ while(1)
 				
 				F_flag=3;
 		}
-		if(motor1==0){
+		if(motor1==1){
 			stop_motor();
+			P_flag=1;
 		}
 		if(F_flag==3){
 			delay_ms(60);
