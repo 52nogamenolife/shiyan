@@ -36,7 +36,7 @@ extern u16 mg1,mg2,mg3,mg4,mg5,mg6;//控制最上方的舵机
 extern u8 adapter1[2],adapter2[2];//步进电机的转动时间
 u16 num;
 u8 flag;
-u8 L_flag=0,R_flag=0,P_flag=0,F_flag=0,G_flag=0,B_flag=0,Ld_flag=0,Rd_flag=0,rfid_send=0,Pd_flag=0,Fd_flag=0,end_flag=0;//左手 右手 放下 脱机 读取rfid 左右臂舵机回转 左抓完 右抓完
+u8 L_flag=0,R_flag=0,P_flag=0,F_flag=0,G_flag=0,B_flag=0,Ld_flag=0,Rd_flag=0,rfid_send=0,Pd_flag=0,Fd_flag=0,end_flag=0,R_catch=0,L_catch=0;//左手 右手 放下 脱机 读取rfid 左右臂舵机回转 左抓完 右抓完
 extern u16 usart1_len,usart2_len;//串口数据长度
 u8 b_flag=0,s_flag=0;
 char information_all[50];
@@ -82,8 +82,8 @@ void TIM4_IRQHandler(void)   //TIM4中断 步进电机的PWM
 		TIM_ClearITPendingBit(TIM4, TIM_IT_Update);  //清除TIMx的中断待处理位:TIM 中断源 
 		speed1flag++;speed3flag++;
 		if(speed1flag>=speed1){
-			speed1flag=0;	
-			if(motor1>0){
+			speed1flag=0;
+			if(motor1>1){
 				motor1--;
 				if(adapter_PWM<=4){
 					
@@ -229,6 +229,7 @@ void get_motor(void)
 				USART_SendData(USART1, 0x0a);
 						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 				trig_ultrasonic();
+				USART1_RX_STA=0;
 					break;
 				case 'L':
 					if(USART1_RX_BUF[1]=='q'){
@@ -247,10 +248,23 @@ void get_motor(void)
 						}
 					}
 					
-					else if(USART1_RX_BUF[1]=='d')
+					else if(USART1_RX_BUF[1]=='d'){
+						if(!Ld_flag)
 							Ld_flag=1;
-						
-					
+					}
+					else if(USART1_RX_BUF[1]=='c'){
+						if(!L_catch)
+						L_catch=1;
+					USART_SendData(USART1, 'L');
+						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+						USART_SendData(USART1, 'c');
+						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+						USART_SendData(USART1, 0x0d);
+						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+				USART_SendData(USART1, 0x0a);
+						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+					USART1_RX_STA=0;
+					}
 					break;
 				case 'R':
 					if(USART1_RX_BUF[1]=='q'){
@@ -268,8 +282,23 @@ void get_motor(void)
 						USART1_RX_STA=0;
 						}
 					}
-					else if(USART1_RX_BUF[1]=='d')
+					else if(USART1_RX_BUF[1]=='d'){
+						if(!Rd_flag)
 							Rd_flag=1;
+					}
+					else if(USART1_RX_BUF[1]=='c'){
+						if(!R_catch)
+						R_catch=1;
+						USART_SendData(USART1, 'R');
+						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+						USART_SendData(USART1, 'c');
+						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+						USART_SendData(USART1, 0x0d);
+						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+				USART_SendData(USART1, 0x0a);
+						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+					USART1_RX_STA=0;
+					}
 					break;
 				case 'P': 
 					if(USART1_RX_BUF[1]=='q'){
@@ -288,12 +317,14 @@ void get_motor(void)
 						}
 					}
 					if(USART1_RX_BUF[1]=='d'){
+						if(!Pd_flag)
 					Pd_flag=1;
 					USART1_RX_STA=0;
 					}
 					break;
 				case 'e':
 					if(USART1_RX_BUF[1]=='n'&&USART1_RX_BUF[2]=='d'){
+						if(!end_flag)
 					end_flag=1;
 						USART_SendData(USART1, 'e');
 						while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
@@ -310,6 +341,7 @@ void get_motor(void)
 					break;
 				case 'F':
 					if(USART1_RX_BUF[1]=='q'){
+						if(!F_flag)
 						F_flag=1;
 						while(USART1_RX_STA&0x8000&&USART1_RX_BUF[0]=='F'&&USART1_RX_BUF[1]=='q'){		
 						USART_SendData(USART1, 'F');
@@ -324,6 +356,7 @@ void get_motor(void)
 						}
 					}
 					if(USART1_RX_BUF[1]=='d'){
+						if(!Fd_flag)
 					Fd_flag=1;
 					USART1_RX_STA=0;
 					}
@@ -346,6 +379,7 @@ void get_motor(void)
 					}
 					else if(USART1_RX_BUF[1]=='d'){
 						rfid_send=1;
+						USART1_RX_STA=0;
 					}
 					
 					break;

@@ -29,7 +29,7 @@ u16 mg1=1900,mg2=1900,mg3=1838,mg4=0x077f,mg5=0x0758,mg6=0x0758;//控制最上�
 u16 usart1_len,usart2_len;//串口数据长度
 u8 looptime=30,delaytime=100;
 extern u8 b_flag,s_flag;//电杠回缩,停止
-extern u8 L_flag,R_flag,P_flag,F_flag,G_flag,B_flag,Ld_flag,Rd_flag,rfid_send,Pd_flag,Fd_flag,end_flag;//左手 右手 放下 脱机 读取rfid 左右臂舵机回转
+extern u8 L_flag,R_flag,P_flag,F_flag,G_flag,B_flag,Ld_flag,Rd_flag,rfid_send,Pd_flag,Fd_flag,end_flag,R_catch,L_catch;//左手 右手 放下 脱机 读取rfid 左右臂舵机回转
 extern u16 ultrasonic1;//超声波返回的定时器计数值
 extern u8 RFID_BUFFER[3];//rfid的读出的数据
 
@@ -153,18 +153,26 @@ while(1)
 				
 				delay_ms(1000);
 			}
+		if(L_catch==1){
 			
-		if(L_flag==1){
-			L_flag=2;
-			move_mg3(mg3,1930);
-			mg3=1930;
-			move_mg5(mg5,0x0710);
-			mg5=0x0710;
 			move_mg2(mg2,0x0705);//左手掌
 			mg2=0x0705;
-			delay_ms(1000);
+			
+			Ld_flag=0;
+			while(!Ld_flag){
+				USART_SendData(USART1, 'L');
+				while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+				USART_SendData(USART1, 'd');
+				while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+				USART_SendData(USART1, 0x0d);
+				while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+				USART_SendData(USART1, 0x0a);
+				while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
+			}
+			
 			move_mg3(mg3,1838);
 			mg3=1838;
+			
 			TIM_SetCompare2(TIM3,2100);
 			TIM_SetCompare1(TIM3,2100);
 			if(R_flag==2){
@@ -180,9 +188,25 @@ while(1)
 
 			TIM_SetCompare1(TIM3,mg1);
 			TIM_SetCompare2(TIM3,mg2);
-			Ld_flag=0;
-			while(!Ld_flag){
-				USART_SendData(USART1, 'L');
+			L_catch=2;
+		}
+		if(L_flag==1){
+			
+			move_mg3(mg3,1930);
+			mg3=1930;
+			
+			move_mg5(mg5,0x0710);
+			mg5=0x0710;
+			L_flag=2;
+		}
+		if(R_catch==1){
+			
+			move_mg1(mg1,0x0710);
+			mg1=0x0710;
+			
+			Rd_flag=0;
+			while(!Rd_flag){
+				USART_SendData(USART1, 'R');
 				while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 				USART_SendData(USART1, 'd');
 				while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
@@ -190,21 +214,7 @@ while(1)
 				while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 				USART_SendData(USART1, 0x0a);
 				while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
-			
-			}		
-		}
-		
-		if(R_flag==1){
-			R_flag=2;
-			move_mg4(mg4,0x0719);
-			mg4=0x0719;
-			move_mg6(mg6,0x0718);
-			mg6=0x0718;
-			
-			move_mg1(mg1,0x0710);
-			mg1=0x0710;
-			delay_ms(1000);
-
+			}
 			TIM_SetCompare1(TIM3,2100);
 			TIM_SetCompare2(TIM3,2100);
 			if(L_flag==2){
@@ -221,30 +231,26 @@ while(1)
 			mg4=0x077f;
 			
 		TIM_SetCompare1(TIM3,mg1);
-	
 		TIM_SetCompare2(TIM3,mg2);
-		Rd_flag=0;
-			while(!Rd_flag){
-				USART_SendData(USART1, 'R');
-				while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
-				USART_SendData(USART1, 'd');
-				while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
-				USART_SendData(USART1, 0x0d);
-				while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
-				USART_SendData(USART1, 0x0a);
-				while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
-			}
+			R_catch=2;
 		}
-		if((R_flag+L_flag)==4){
+		if(R_flag==1){
+			
+			move_mg4(mg4,0x0719);
+			mg4=0x0719;
+			
+			move_mg6(mg6,0x0718);
+			mg6=0x0718;
+			
+			
+		R_flag=2;
+		}
+		if((R_catch+L_catch)==4){
 			B_flag=1;
-		R_flag=0;
-			L_flag=0;
+		L_catch=0;
+			R_catch=0;
 		}
 		if(P_flag==1){//放下 第一次到达 或者开关有效
-			P_flag=2;//我方好了！
-			L_flag=0;
-			R_flag=0;
-			
 			
 			move_mg4(mg4,0x0788	);//右边
 			mg4=0x0788;
@@ -261,7 +267,6 @@ while(1)
 			mg5=0x0720;
 			
 			delay_ms(500);
-			
 			
 			move_mg1(mg1,0x073a);
 			mg1=0x073a;
@@ -281,28 +286,17 @@ while(1)
 				USART_SendData(USART1, 0x0a);
 				while(USART_GetFlagStatus(USART1,USART_FLAG_TC)!=SET);//是否发送完成
 			}
+			P_flag=2;//我方好了！
+			L_flag=0;
+			R_flag=0;
+			L_catch=0;
+			R_catch=0;
 		}
 		if(0){
 			//stop_motor();
-		L_flag=0;
+			L_flag=0;
 			R_flag=0;
-			
-			TIM_SetCompare1(TIM3,2100);
-			TIM_SetCompare2(TIM3,2100);
-			
-			move_mg5(mg5,0x0720);//左边
-			mg5=0x0720;
-			move_mg6(mg6,0x0728);//右边
-			mg6=0x0728;
-			delay_ms(500);
-			delay_ms(500);
-			
-			move_mg1(mg1,0x073a);
-			mg1=0x073a;
-			move_mg2(mg2,0x780);
-			mg2=0x780;
-			
-			reset();
+			P_flag=1;
 			
 			DOWN();
 		
@@ -406,8 +400,8 @@ while(1)
 			s_flag=0;
 			stop_motor();
 				}
-		if(ultrasonic1>=5700){
-			//F_flag=4;
+		if(ultrasonic1>=7300){
+			F_flag=4;
 		}
 		if(F_flag==2){//脱机上升
 			TIM_Cmd(TIM4,ENABLE);
@@ -427,9 +421,8 @@ while(1)
 			trig_ultrasonic();
 			getultrasonic();
 		}
-			if(F_flag==4) {//缓慢上升
-				speed1=120;
-				//speed3=120;		
+			if(F_flag==4){//缓慢上升
+				motor1=48000;	
 			}
 			
 	}
