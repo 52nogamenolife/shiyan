@@ -147,11 +147,7 @@ while(1)
 		{
 			
 			while(0){
-				
-				TIM_SetCompare1(TIM3,mg1);
-				TIM_SetCompare2(TIM3,mg2);
-				
-				delay_ms(1000);
+	
 			}
 		if(L_catch==1){
 			
@@ -175,6 +171,7 @@ while(1)
 			
 			TIM_SetCompare2(TIM3,2100);
 			TIM_SetCompare1(TIM3,2100);
+			delay_ms(1000);
 			if(R_flag==2){
 			move_mg5(mg5,0x0758);
 			mg5=0x0758;
@@ -194,7 +191,7 @@ while(1)
 			
 			move_mg3(mg3,1930);
 			mg3=1930;
-			
+			delay_ms(1000);
 			move_mg5(mg5,0x0710);
 			mg5=0x0710;
 			L_flag=2;
@@ -227,6 +224,7 @@ while(1)
 			delay_ms(1000);
 			TIM_SetCompare2(TIM2,2100);
 			}
+			delay_ms(1000);
 			move_mg4(mg4,0x077f);
 			mg4=0x077f;
 			
@@ -238,10 +236,9 @@ while(1)
 			
 			move_mg4(mg4,0x0719);
 			mg4=0x0719;
-			
+			delay_ms(1000);
 			move_mg6(mg6,0x0718);
 			mg6=0x0718;
-			
 			
 		R_flag=2;
 		}
