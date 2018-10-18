@@ -40,6 +40,7 @@ void move_mg5(u16 a,u16 b){
 	}
 	*/
 	TIM_SetCompare1(TIM2,b);
+	delay_ms(1000);
 }
 void move_mg6(u16 a,u16 b){
 	/*
@@ -61,6 +62,7 @@ void move_mg6(u16 a,u16 b){
 	}
 	*/
 	TIM_SetCompare2(TIM2,b);
+	delay_ms(1000);
 }
 void move_mg1(u16 a,u16 b){
 	/*if(a>b){
@@ -81,6 +83,7 @@ void move_mg1(u16 a,u16 b){
 	}
 		*/
 	TIM_SetCompare1(TIM3,b);
+	delay_ms(1000);
 }
 
 void move_mg2(u16 a,u16 b){
@@ -103,6 +106,7 @@ void move_mg2(u16 a,u16 b){
 	}
 		*/
 	TIM_SetCompare2(TIM3,b);
+	delay_ms(1000);
 }
 
 void move_mg3(u16 a,u16 b){
@@ -125,6 +129,7 @@ void move_mg3(u16 a,u16 b){
 	}
 	*/
 	TIM_SetCompare3(TIM3,b);
+	delay_ms(1000);
 }
 
 void move_mg4(u16 a,u16 b){
@@ -147,6 +152,7 @@ void move_mg4(u16 a,u16 b){
 	}
 	*/
 	TIM_SetCompare4(TIM3,b);
+	delay_ms(1000);
 }
 
 
